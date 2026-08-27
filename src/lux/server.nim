@@ -175,6 +175,12 @@ proc httpHandler(request: Request) {.gcsafe.} =
 proc websocketHandler(
   websocket: WebSocket, event: WebSocketEvent, message: Message
 ) {.gcsafe.} =
+  if event == MessageEvent and message.kind == Ping:
+    # mummy does not auto-answer control frames; the certifier's
+    # `game_contract_violation` check pings `/global` and waits for the Pong.
+    # Answered before the lock so a busy tick can never delay it.
+    websocket.send(message.data, Pong)
+    return
   {.gcsafe.}:
     withLock appState.lock:
       var found = -1
