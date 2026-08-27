@@ -1,0 +1,12 @@
+# The complete sprite-label vocabulary the board stream emits, one per line.
+# Regenerate in the SAME commit as any label change:
+#   nim r -d:release --path:src tests/test_lux_label_contract.nim
+# (the test prints the observed set when it disagrees).
+island
+road
+wood
+coal
+uranium
+city
+worker
+cart

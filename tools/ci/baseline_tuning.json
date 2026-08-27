@@ -1,0 +1,16 @@
+{
+  "note": "The pick from tools/tune_baselines.nim. Regenerate with `nim r -d:release --path:src tools/tune_baselines.nim --write`; CI re-runs the sweep with --check.",
+  "objective": "forester must WIN the pinned duel seed and BOTH sides must survive all nine nights there; among the survivors, maximise forester wins across the seed set, then full_time endings, then total city tiles built by both sides (a filler that never builds is not an opponent).",
+  "seeds": [
+    1734029581,
+    42,
+    7,
+    99,
+    1234
+  ],
+  "foresterWorkers": 6,
+  "foresterFuelNights": 18,
+  "prospectorEarlyWorkers": 6,
+  "prospectorLateWorkers": 10,
+  "prospectorSeedTiles": 8
+}

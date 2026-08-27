@@ -1,0 +1,2443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lux AI — Broadcast Replay</title>
+<style>
+/* ============================================================
+   Ink & Print — warm CRT-phosphor arena broadcast.
+   Palette (never pure black/white): stage #16110d→#241a12,
+   paper #f2e8d8, ink #2a1f16, red #e0523a, blue #3f7cc4,
+   amber #e8a33d, ghost #8a7f72. Typography + weight + whitespace
+   carry hierarchy; strokes are warm-dark, minimal, reserved-slot.
+   ============================================================ */
+@font-face {
+  font-family: 'nes-pixel';
+  src: url(data:font/ttf;base64,AAEAAAALAIAAAwAwRFNJRwAAAAEAADroAAAACE9TLzJl9WflAAABOAAAAGBjbWFwQRVFIAAAAygAAAIEZ2x5ZuI2DFsAAAbAAAAqcGhlYWQrVWkOAAAAvAAAADZoaGVhB4EE5QAAAPQAAAAkaG10eI8xFoAAAAGYAAABkGxvY2EACJ6EAAAFLAAAAZRtYXhwAHAALgAAARgAAAAgbmFtZXv46UAAADEwAAAJmHBvc3QAaQAzAAA6yAAAACAAAQAAAAEAAND94iRfDzz1AAAEAAAAAADkYRIIAAAAAORhEggAAAAAA4AEAAAAAAgAAgABAAAAAAABAAAEAAAAAAAEAAAAAIADgAABAAAAAAAAAAAAAAAAAAAAZAABAAAAZAAsAAsAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAID/QGQAAUABAIAAgAAAAAAAgACAAAAAgAAMwDMAAAAAAQAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAEZTVFIAQAAgIB0DgAAAAAAEAAAAIAEB/83/AAADAAOAAAAAIAAAAzEAAAQAAAAEAACABAABAAQAAAAEAAAABAAAAAQAAAAEAAGABAABAAQAAQAEAAAABAAAgAQAAIAEAACABAABAAQAAAAEAAAABAAAgAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAABAAQAAQAEAAAABAAAAAQAAIAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAgAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAACABAAAAAQAAAAEAAAABAAAAAQAAIAEAAAABAABAAQAAAAEAAEABAAAAAQAAAAEAACABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAEABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAIAEAAAABAAAAAQAAAAEAAAABAAAgAQAAAAEAACABAABAAQAAQAEAAAABAABAAQAAYAEAACABAAAgAAAAAIAAAADAAAAFAADAAEAAAEMAAQA+AAAAAgACAACAAAAfiAZIB3//wAAACAgGCAc////4eBI4EYAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAD4AAAACAAIAAIAAAB+IBkgHf//AAAAICAYIBz////h4EjgRgABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABoAAAAaAAAAMgAAAEAAAABsAAAAngAAAN4AAAELAAABFAAAAScAAAE6AAABdQAAAYgAAAGWAAABnwAAAagAAAHSAAAB+QAAAgwAAAIzAAACWgAAAnoAAAKXAAACuQAAAtYAAAL+AAADIAAAAy4AAANEAAADawAAA3kAAAOgAAADwgAAA+IAAAQEAAAEIgAABEkAAARmAAAEeQAABIkAAASrAAAEvgAABNEAAATmAAAFDwAABRoAAAU3AAAFVAAABWwAAAWCAAAFpwAABckAAAXwAAAF/gAABhEAAAYzAAAGUAAABoEAAAaZAAAGuwAABskAAAbzAAAHAQAAByMAAAcsAAAHPQAAB18AAAd9AAAHmgAAB60AAAfAAAAH0AAAB+gAAAf7AAAIDgAACCYAAAhIAAAIUwAACHAAAAiNAAAIpQAACLsAAAjeAAAI+wAACRgAAAkmAAAJOQAACVsAAAl4AAAJqQAACcEAAAneAAAJ+wAACgQAAAohAAAKPgAACk8AAApgAAAKfgAACpwAAUAAAAAArEDgAACAAUACAALAA8AAAEBAQEBAQEBAQEBAQEBAQECbP7s/u3/7QET/u0CTQAA/uz/7QEU/dn/uwAAArEAAAAyAXr+hgATAXsBev0LAvX+hgATAXsAAPyyA4AAAPyAAAAAAgCAAAACgAQAAAMADwAAAQEBAQEBAQEBAQEBAQEBAQEAAAABAAAA/wAAAP+AAAAAgAAAAQAAAACAAAD/gAAAAAABAAAA/wABgACAAAABgAAAAIAAAP+AAAD+gAAA/4AAAgEAAoACgAQAAAMABwAAAQEBAQEBAQEBAAAAAIAAAACAAAAAgAAAAoABgAAA/oAAAAGAAAD+gAACAAAAgAOABAAAAwAfAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQIAAAD/gAAA/wAAAP+AAAAAgAAA/4AAAACAAAABAAAAAIAAAAEAAAAAgAAA/4AAAACAAAD/gAAA/wAAAP+AAAABgAGAAAD+gP8AAIAAAACAAAABgAAAAIAAAACAAAD/gAAAAIAAAP+AAAD/gAAA/oAAAP+AAAD/gAAAAIAAAP+AAAMAAAAAA4AEAAADAAcAIwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAoAAAP+AAAD+AAAAAIAAAACAAAD/AAAAAQAAAP+AAAAAgAAA/4AAAACAAAABAAAAAYAAAP6AAAABAAAAAIAAAP+AAAD/AAAAAQABAAAA/wABgACAAAD/gP2AAIAAAACAAAABAAAAAIAAAACAAAAAgAAAAIAAAP+AAAD/gAAA/4AAAP+AAAD/AAAA/4AAAP+AAAAACwAAAIADgAQAAAMABwALAA8AEwAXABsAHwAjACcAKwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAIAAAAAAAAAAgAAAAgAAAP+AAAD+gAAAAIAAAACAAAABgAAA/gAAAACAAAAAAAAAAIAAAP6AAAD/gAAAAgAAAACAAAD9AAAAAYAAAAGAAAAAgAAAAIAAgAAA/4AAgACAAAD/gAAAAIAAAP+AAIAAgAAA/4D/AAGAAAD+gAGAAIAAAP+AAIAAgAAA/4AAgACAAAD/gAAAAIAAAP+A/4ABgAAA/oABAACAAAD/gAAAAAMAAACAA4AEAAADAAcAHwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEDAAAAAIAAAP+AAAAAgAAA/QAAAP+AAAAAgAAAAIAAAACAAAABgAAA/wAAAP8AAAABAAAAAIAAAACAAAD/gAAAAIAAgAAA/4ABAAEAAAD/AP8AAIAAAAEAAAAAgAAAAQAAAACAAAD/gAAA/oAAAP8AAAABAAAA/4AAAP+AAAD/gAAAAAEBgAKAAgAEAAADAAABAQEBAYAAAACAAAACgAGAAAD+gAAAAAEBAACAAoAEAAALAAABAQEBAQEBAQEBAQEBgAAA/4AAAACAAAABAAAA/4AAAACAAAAAgACAAAACgAAAAIAAAP+AAAD9gAAA/4AAAAABAQAAgAKABAAACwAAAQEBAQEBAQEBAQEBAQAAAACAAAD/gAAAAQAAAACAAAD/gAAAAIAAgAAAAoAAAACAAAD/gAAA/YAAAP+AAAAAAQAAAIADgAQAACsAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAAAAAACAAAAAgAAA/wAAAAEAAAD/gAAA/4AAAAEAAAAAgAAAAIAAAACAAAABAAAA/4AAAP+AAAABAAAA/wAAAACAAAAAgAAA/wAAAP+AAAD/gAAA/4AAAACAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAP+AAAD/gAAAAIAAAACAAAD/gAAA/4AAAP+AAAD/gAAA/4AAAP+AAAD/gAAAAIAAAACAAAD/gAAA/4AAAAABAIAAgAOABAAACwAAAQEBAQEBAQEBAQEBAYAAAP8AAAABAAAAAQAAAAEAAAD/AAAAAIABgAAAAIAAAAGAAAD+gAAA/4AAAP6AAAAAAQCAAAACAAGAAAcAAAEBAQEBAQEBAIAAAACAAAABAAAA/4AAAAAAAIAAAAEAAAD/AAAA/4AAAAABAIACAAOAAoAAAwAAAQEBAQCAAAADAAAAAgAAgAAA/4AAAAABAQAAgAIAAYAAAwAAAQEBAQEAAAABAAAAAIABAAAA/wAAAAAHAAAAgAOABAAAAwAHAAsADwATABcAGwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQAAAAAAgAAAAAAAAACAAAAAAAAAAIAAAAAAAAAAgAAAAAAAAACAAAAAAAAAAIAAAAAAAAAAgAAAAIAAgAAA/4AAgACAAAD/gACAAIAAAP+AAIAAgAAA/4AAgACAAAD/gACAAIAAAP+AAIAAgAAA/4AAAAACAAAAgAOABAAADQAbAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQAAAP+AAAD/gAAAAIAAAACAAAAAgAAAAQAAAAAAAAD/gAAA/wAAAAGAAAAAgAAAAIAAAP+AAAAAgACAAAAAgAAAAYAAAACAAAD+AAAA/4AAAP+AAIACAAAAAIAAAACAAAD/gAAA/4AAAP6AAAD/gAABAIAAgAOABAAACwAAAQEBAQEBAQEBAQEBAIAAAAEAAAD/gAAAAIAAAAEAAAABAAAAAIAAgAAAAgAAAACAAAAAgAAA/QAAAP+AAAAAAQAAAIADgAQAABsAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAIAAAACAAAABAAAAAIAAAP6AAAD/AAAAAIAAAAKAAAAAgAAA/4AAAP+AAAD/AAAAAgAAAACAAQAAAACAAAAAgAAAAIAAAACAAAD/gAAAAIAAAACAAAD/gAAA/wAAAP+AAAD/gAAA/4AAAP+AAAAAAQAAAIADgAQAABsAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAgAAA/4AAAAEAAAABgAAA/oAAAACAAAAAgAAA/gAAAAOAAAD/gAAA/4AAAACAAAAAgAAA/4AAAACAAIAAAACAAAD/gAAAAQAAAACAAAAAgAAAAIAAAACAAAD/gAAA/4AAAP+AAAD/gAAA/wAAAP+AAAAAAgAAAIADgAQAAAUAFQAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQIAAAD/gAAA/4AAAAEAAAD+AAAAAIAAAACAAAAAgAAAAYAAAACAAAD/gAAAAgABAAAA/4AAAP+A/oABAAAAAQAAAACAAAAAgAAAAIAAAP4AAAD/gAAA/wAAAAABAAAAgAOABAAAEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEAgAAA/4AAAAEAAAABgAAA/YAAAAMAAAD+AAAAAgAAAACAAAD/gAAAAIAAgAAAAIAAAP+AAAABgAAAAYAAAP+AAAD/gAAA/4AAAP6AAAD/gAAAAAIAAACAA4AEAAADABcAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQKAAAD+gAAA/4AAAP+AAAAAgAAAAIAAAAIAAAD+gAAA/4AAAAIAAAAAgAAA/4AAAAEAAQAAAP8A/4AAgAAAAgAAAACAAAAAgAAA/4AAAP+AAAD/gAAA/4AAAP8AAAD/gAABAAAAgAOABAAAEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAAAAAIAAAACAAAAAgAAA/oAAAP8AAAADgAAA/4AAAP+AAAD/gAAAAIABgAAAAIAAAACAAAAAgAAA/4AAAAEAAAD/AAAA/4AAAP+AAAD+gAAAAAMAAACAA4AEAAADAAcAGwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQKAAAD+gAAAAYAAAP6AAAD/gAAA/4AAAACAAAD/gAAAAIAAAAKAAAAAgAAA/4AAAACAAAD/gAAAAQABAAAA/wABgAEAAAD/AP4AAIAAAAEAAAAAgAAAAQAAAACAAAD/gAAA/wAAAP+AAAD/AAAA/4AAAAACAAAAgAOABAAAAwAXAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQECgAAA/oAAAP+AAAABgAAAAIAAAP4AAAD/gAAAAIAAAAKAAAAAgAAA/4AAAP+AAAACgAEAAAD/AP4AAIAAAACAAAAAgAAAAIAAAAEAAAAAgAAA/4AAAP4AAAD/gAAA/4AAAgEAAIACAAOAAAMABwAAAQEBAQEBAQEBAAAAAQAAAP8AAAABAAAAAIABAAAA/wACAAEAAAD/AAADAQAAAAIAAwAAAwAJAA0AAAEBAQEBAQEBAQEBAQEBAQAAAACAAAAAAAAA/4AAAAEAAAD/AAAAAQAAAAAAAIAAAP+AAIAAgAAAAIAAAP8AAYABAAAA/wAAAQAAAIADgAQAABsAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBgAAA/4AAAP+AAAD/gAAAAIAAAACAAAAAgAAAAgAAAP8AAAD/gAAA/4AAAACAAAAAgAAAAQAAAACAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAP+AAAD/gAAA/4AAAP+AAAD/gAAA/4AAAP+AAAAAAgAAAQADAAOAAAMABwAAAQEBAQEBAQEAAAAAAwAAAP0AAAADAAAAAQAAgAAA/4ACAACAAAD/gAABAIAAgAOABAAAGwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQCAAAAAgAAAAIAAAACAAAD/gAAA/4AAAP+AAAABgAAAAIAAAACAAAAAgAAA/4AAAP+AAAD/gAAAAIAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAA/4AAAP+AAAD/gAAA/4AAAP+AAAD/gAAA/4AAAAACAAAAAAOABAAAAwAXAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBgAAAAQAAAP8AAAAAgAAAAIAAAP6AAAD/AAAAAIAAAAKAAAAAgAAA/4AAAP+AAAAAAAEAAAD/AAGAAQAAAACAAAAAgAAA/wAAAAEAAAAAgAAA/4AAAP8AAAD/gAAA/4AAAgAAAIADgAQAAAMAFQAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQKAAAD/gAAA/oAAAP+AAAAAgAAAAoAAAACAAAD/gAAA/oAAAAEAAAD+gAAAAQABgAAA/oD/gACAAAACgAAAAIAAAP+AAAD9gAAA/4AAAAKAAAAAgAAA/QAAAAACAAAAgAOABAAABwAXAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQECgAAA/4AAAP+AAAD/gAAA/wAAAACAAAAAgAAAAYAAAACAAAAAgAAA/wAAAP6AAAACAAEAAAAAgAAA/4AAAP8A/oACgAAAAIAAAACAAAD/gAAA/4AAAP2AAAABAAAA/wAAAwAAAIADgAQAAAMABwATAAABAQEBAQEBAQEBAQEBAQEBAQEBAQKAAAD+gAAAAYAAAP6AAAD/AAAAAwAAAACAAAD/gAAAAIAAAP+AAAABAAEAAAD/AAGAAQAAAP8A/gADgAAA/4AAAP8AAAD/gAAA/wAAAP+AAAAAAQAAAIADgAQAABsAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAAAA/4AAAP+AAAAAgAAAAIAAAAIAAAAAgAAA/wAAAP8AAAD/gAAAAIAAAAEAAAABAAAA/4AAAACAAIAAAACAAAABgAAAAIAAAACAAAD/gAAA/4AAAACAAAD/gAAA/oAAAP+AAAAAgAAA/4AAAP+AAAAAAgAAAIADgAQAAAcAEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQECAAAAAIAAAP+AAAD/AAAA/wAAAAKAAAAAgAAAAIAAAP+AAAD/gAAAAQAAgAAAAYAAAACAAAD9gP+AA4AAAP+AAAD/gAAA/oAAAP+AAAD/gAABAAAAgAOABAAACwAAAQEBAQEBAQEBAQEBAAAAAAOAAAD9gAAAAgAAAP4AAAACgAAAAIADgAAA/4AAAP8AAAD/gAAA/wAAAP+AAAAAAQAAAIADgAQAAAkAAAEBAQEBAQEBAQEAAAAAA4AAAP2AAAACAAAA/gAAAACAA4AAAP+AAAD/AAAA/4AAAP6AAAEAAACAA4AEAAAXAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAAAA/4AAAP+AAAAAgAAAAIAAAAKAAAD+AAAA/4AAAACAAAABAAAA/4AAAAGAAAAAgACAAAAAgAAAAYAAAACAAAAAgAAA/4AAAP+AAAD+gAAA/4AAAAEAAAAAgAAA/gAAAAABAAAAgAOABAAACwAAAQEBAQEBAQEBAQEBAAAAAAEAAAABgAAAAQAAAP8AAAD+gAAAAIADgAAA/oAAAAGAAAD8gAAAAYAAAP6AAAAAAQCAAIADgAQAAAsAAAEBAQEBAQEBAQEBAQCAAAABAAAA/wAAAAMAAAD/AAAAAQAAAACAAIAAAAKAAAAAgAAA/4AAAP2AAAD/gAAAAAEAAACAA4AEAAANAAABAQEBAQEBAQEBAQEBAQCAAAD/gAAAAQAAAAGAAAD/AAAAAgAAAP+AAAAAgACAAAABAAAA/wAAAAKAAAAAgAAA/QAAAP+AAAEAAACAA4AEAAAdAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAQAAAACAAAAAgAAAAIAAAAEAAAD/gAAA/4AAAP+AAAAAgAAAAIAAAACAAAD+gAAA/4AAAP+AAAAAgAOAAAD+gAAAAIAAAACAAAAAgAAA/4AAAP+AAAD/gAAA/4AAAP+AAAD/gAAA/4AAAACAAAAAgAAA/wAAAQAAAIADgAQAAAUAAAEBAQEBAQAAAAABAAAAAoAAAACAA4AAAP0AAAD/gAABAAAAgAOABAAAEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAQAAAACAAAAAgAAAAIAAAAEAAAD/AAAA/4AAAP+AAAD/gAAAAIADgAAA/4AAAP+AAAAAgAAAAIAAAPyAAAABgAAA/4AAAACAAAD+gAAAAAEAAACAA4AEAAATAAABAQEBAQEBAQEBAQEBAQEBAQEBAQAAAAABAAAAAIAAAACAAAAAgAAAAQAAAP8AAAD/gAAA/4AAAP+AAAAAgAOAAAD/gAAA/4AAAP+AAAABgAAA/IAAAACAAAAAgAAAAIAAAP6AAAAAAgAAAIADgAQAAAMADwAAAQEBAQEBAQEBAQEBAQEBAQKAAAD+gAAA/4AAAP+AAAAAgAAAAoAAAACAAAD/gAAAAQACgAAA/YD/gACAAAACgAAAAIAAAP+AAAD9gAAA/4AAAgAAAIADgAQAAAMADQAAAQEBAQEBAQEBAQEBAQECgAAA/oAAAP8AAAADAAAAAIAAAP+AAAD+AAAAAgABgAAA/oD+gAOAAAD/gAAA/oAAAP+AAAD/AAAAAAMAAACAA4AEAAADAAsAGQAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEDAAAAAIAAAP6AAAD/gAAAAQAAAP6AAAD/gAAA/4AAAACAAAACgAAAAIAAAP+AAAD/gAAAAIAAgAAA/4AAgACAAAAAgAAAAYAAAP2A/4AAgAAAAoAAAACAAAD/gAAA/gAAAP+AAAD/gAACAAAAgAOABAAABQAXAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQECAAAAAIAAAP6AAAD/AAAAAwAAAACAAAD/AAAAAIAAAACAAAD+gAAA/4AAAP+AAAACAACAAAABAAAA/oD+gAOAAAD/gAAA/oAAAP+AAAD/gAAA/4AAAACAAAAAgAAA/wAAAQAAAIADgAQAABsAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAgAAA/4AAAAEAAAABgAAA/gAAAP+AAAAAgAAAAgAAAACAAAD/AAAA/wAAAAIAAAAAgAAA/4AAAACAAIAAAACAAAD/gAAAAQAAAACAAAABAAAAAIAAAP+AAAD/gAAAAIAAAP8AAAD/gAAA/wAAAP+AAAAAAQCAAIADgAQAAAcAAAEBAQEBAQEBAYAAAP8AAAADAAAA/wAAAACAAwAAAACAAAD/gAAA/QAAAAABAAAAgAOABAAACwAAAQEBAQEBAQEBAQEBAIAAAP+AAAABAAAAAYAAAAEAAAD/gAAAAIAAgAAAAwAAAP0AAAADAAAA/QAAAP+AAAAAAQAAAIADgAQAABcAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQGAAAD/gAAA/4AAAP+AAAABAAAAAIAAAACAAAAAgAAAAQAAAP+AAAD/gAAA/4AAAACAAIAAAACAAAAAgAAAAgAAAP6AAAD/gAAAAIAAAAGAAAD+AAAA/4AAAP+AAAD/gAAAAAEAAACAA4AEAAATAAABAQEBAQEBAQEBAQEBAQEBAQEBAQAAAAABAAAAAIAAAACAAAAAgAAAAQAAAP8AAAD/gAAA/4AAAP+AAAAAgAOAAAD+gAAAAIAAAP+AAAABgAAA/IAAAACAAAAAgAAA/4AAAP+AAAAAAQAAAIADgAQAACMAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQAAAAAAgAAAAIAAAP+AAAD/gAAAAQAAAACAAAAAgAAAAIAAAAEAAAD/gAAA/4AAAACAAAAAgAAA/wAAAP+AAAD/gAAA/4AAAACAAQAAAACAAAAAgAAAAIAAAAEAAAD/gAAA/4AAAACAAAAAgAAA/wAAAP+AAAD/gAAA/4AAAP8AAAAAgAAAAIAAAP+AAAD/gAAAAAEAgACAA4AEAAAPAAABAQEBAQEBAQEBAQEBAQEBAYAAAP+AAAD/gAAAAQAAAAEAAAABAAAA/4AAAP+AAAAAgAGAAAAAgAAAAYAAAP6AAAABgAAA/oAAAP+AAAD+gAAAAAEAAACAA4AEAAAXAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAIAAAACAAAAAgAAAAIAAAP4AAAADgAAA/4AAAP+AAAD/gAAA/4AAAAIAAAAAgAEAAAAAgAAAAIAAAACAAAAAgAAAAIAAAP8AAAD/gAAA/4AAAP+AAAD/gAAA/4AAAAABAQAAgAKABAAABwAAAQEBAQEBAQEBAAAAAYAAAP+AAAAAgAAAAIADgAAA/4AAAP2AAAD/gAAAAAcAAACAA4AEAAADAAcACwAPABMAFwAbAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAwAAAACAAAD/AAAAAIAAAP8AAAAAgAAA/wAAAACAAAD/AAAAAIAAAP8AAAAAgAAA/wAAAACAAAAAgACAAAD/gACAAIAAAP+AAIAAgAAA/4AAgACAAAD/gACAAIAAAP+AAIAAgAAA/4AAgACAAAD/gAAAAAEBAACAAoAEAAAHAAABAQEBAQEBAQEAAAAAgAAA/4AAAAGAAAAAgACAAAACgAAAAIAAAPyAAAAAAQAAAgADgAQAABcAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQAAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAA/wAAAP+AAAD/gAAA/4AAAAIAAIAAAACAAAAAgAAAAIAAAP+AAAD/gAAA/4AAAP+AAAAAgAAAAIAAAP+AAAD/gAAAAAEAAACAA4ABAAADAAABAQEBAAAAAAOAAAAAgACAAAD/gAAAAAIAgAKAAgAEAAADAAkAAAEBAQEBAQEBAQEBgAAAAIAAAP8AAAD/gAAAAQAAAAKAAIAAAP+AAIAAgAAAAIAAAP8AAAAAAgAAAIADgAOAAAcAFwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAoAAAP+AAAD/gAAA/4AAAP8AAAAAgAAAAIAAAAGAAAAAgAAAAIAAAP8AAAD+gAAAAYABAAAAAIAAAP+AAAD/AP8AAgAAAACAAAAAgAAA/4AAAP+AAAD+AAAAAIAAAP+AAAMAAACAA4ADgAADAAcAEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQECgAAA/oAAAAGAAAD+gAAA/wAAAAMAAAAAgAAA/4AAAACAAAD/gAAAAQABAAAA/wABgACAAAD/gP4AAwAAAP+AAAD/gAAA/4AAAP8AAAD/gAAAAAEAAACAA4ADgAATAAABAQEBAQEBAQEBAQEBAQEBAQEBAQCAAAD/gAAAAIAAAAKAAAAAgAAA/wAAAP6AAAABgAAAAQAAAP+AAAAAgACAAAACAAAAAIAAAP+AAAD/gAAAAIAAAP4AAAAAgAAA/4AAAP+AAAAAAgAAAIADgAOAAAMACwAAAQEBAQEBAQEBAQEBAoAAAP6AAAD/AAAAAwAAAACAAAD/gAAAAQACAAAA/gD/gAMAAAD/gAAA/gAAAP+AAAEAAACAA4ADgAALAAABAQEBAQEBAQEBAQEAAAAAA4AAAP2AAAACAAAA/gAAAAKAAAAAgAMAAAD/gAAA/4AAAP+AAAD/AAAA/4AAAAABAAAAgAOAA4AACQAAAQEBAQEBAQEBAQAAAAADgAAA/YAAAAIAAAD+AAAAAIADAAAA/4AAAP8AAAD/gAAA/wAAAQAAAIADgAOAAA8AAAEBAQEBAQEBAQEBAQEBAQEAgAAA/4AAAACAAAACgAAA/gAAAAGAAAD/AAAAAgAAAACAAIAAAAIAAAAAgAAA/4AAAP4AAAAAgAAAAIAAAP6AAAAAAQAAAIADgAOAAAsAAAEBAQEBAQEBAQEBAQAAAAABAAAAAYAAAAEAAAD/AAAA/oAAAACAAwAAAP8AAAABAAAA/QAAAAGAAAD+gAAAAAEBAACAAwADgAALAAABAQEBAQEBAQEBAQEBAAAAAIAAAP+AAAACAAAA/4AAAACAAAAAgACAAAACAAAAAIAAAP+AAAD+AAAA/4AAAAABAAAAgAOAA4AADwAAAQEBAQEBAQEBAQEBAQEBAQCAAAD/gAAAAQAAAAEAAAD/gAAAAgAAAP+AAAD/gAAAAIAAgAAAAIAAAP+AAAACAAAAAIAAAP+AAAD+AAAA/4AAAAACAAAAgAOAA4AABQAXAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQECAAAAAIAAAAEAAAD8gAAAAQAAAACAAAAAgAAAAYAAAP8AAAD/gAAA/4AAAP+AAAAAgAEAAAD/gAAA/4AAAAMAAAD/AAAAAIAAAACAAAD/gAAA/4AAAP8AAAAAgAAA/oAAAQAAAIADgAOAAAUAAAEBAQEBAQAAAAABAAAAAoAAAACAAwAAAP2AAAD/gAABAAAAgAOAA4AAEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAQAAAACAAAAAgAAAAIAAAAEAAAD/AAAA/4AAAP+AAAD/gAAAAIADAAAA/4AAAP+AAAAAgAAAAIAAAP0AAAABgAAA/4AAAACAAAD+gAAAAAEAAACAA4ADgAATAAABAQEBAQEBAQEBAQEBAQEBAQEBAQAAAAABAAAAAIAAAACAAAAAgAAAAQAAAP8AAAD/gAAA/4AAAP+AAAAAgAMAAAD/gAAA/4AAAP+AAAABgAAA/QAAAACAAAAAgAAAAIAAAP6AAAAAAgAAAIADgAOAAAMADwAAAQEBAQEBAQEBAQEBAQEBAQKAAAD+gAAA/4AAAP+AAAAAgAAAAoAAAACAAAD/gAAAAQACAAAA/gD/gACAAAACAAAAAIAAAP+AAAD+AAAA/4AAAgAAAIADgAOAAAMADQAAAQEBAQEBAQEBAQEBAQECgAAA/oAAAP8AAAADAAAAAIAAAP+AAAD+AAAAAYABgAAA/oD/AAMAAAD/gAAA/oAAAP+AAAD/gAAAAAMAAACAA4ADgAADAAkAFwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAYAAAACAAAAAAAAAAIAAAP6AAAD/gAAA/4AAAACAAAACgAAAAIAAAP+AAAAAgAAAAYAAgAAA/4D/gACAAAABgAAA/gD/gACAAAACAAAAAIAAAP+AAAD+gAAA/4AAAP+AAAAAAgAAAIADgAOAAAMAEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQECgAAA/oAAAP8AAAADAAAAAIAAAP+AAAAAgAAA/wAAAP+AAAD/AAAAAgABAAAA/wD+gAMAAAD/gAAA/wAAAP8AAAD/gAAAAIAAAACAAAD/AAABAAAAgAOAA4AAEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAoAAAP4AAAD/gAAAAIAAAAKAAAD+AAAAAgAAAACAAAD/gAAAAIAAgAAAAQAAAACAAAAAgAAAAIAAAP+AAAD/gAAA/4AAAP8AAAD/gAAAAAEAgACAA4ADgAAHAAABAQEBAQEBAQGAAAD/AAAAAwAAAP8AAAAAgAKAAAAAgAAA/4AAAP2AAAAAAQAAAIADgAOAAAsAAAEBAQEBAQEBAQEBAQCAAAD/gAAAAQAAAAGAAAABAAAA/4AAAACAAIAAAAKAAAD9gAAAAoAAAP2AAAD/gAAAAAEAAACAA4ADgAAXAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBgAAA/4AAAP+AAAD/gAAAAQAAAACAAAAAgAAAAIAAAAEAAAD/gAAA/4AAAP+AAAAAgACAAAAAgAAAAIAAAAGAAAD+gAAA/4AAAACAAAABgAAA/oAAAP+AAAD/gAAA/4AAAAABAAAAgAOAA4AAEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAQAAAACAAAAAgAAAAIAAAAEAAAD/AAAA/4AAAP+AAAD/gAAAAIADAAAA/oAAAACAAAD/gAAAAYAAAP0AAAAAgAAAAIAAAP+AAAD/gAAAAAEAAACAA4ADgAAjAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAIAAAACAAAD/gAAA/4AAAAEAAAAAgAAAAIAAAACAAAABAAAA/4AAAP+AAAAAgAAAAIAAAP8AAAD/gAAA/4AAAP+AAAAAgACAAAAAgAAAAQAAAACAAAAAgAAA/4AAAP+AAAAAgAAAAIAAAP+AAAD/gAAA/wAAAP+AAAD/gAAAAIAAAACAAAD/gAAA/4AAAAABAIAAgAOAA4AADwAAAQEBAQEBAQEBAQEBAQEBAQGAAAD/gAAA/4AAAAEAAAABAAAAAQAAAP+AAAD/gAAAAIABAAAAAIAAAAGAAAD+gAAAAYAAAP6AAAD/gAAA/wAAAAABAAAAgAOAA4AAEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAIAAAAEAAAABAAAA/YAAAAOAAAD/gAAA/wAAAP8AAAACgAAAAIABAAAAAIAAAACAAAAAgAAAAIAAAP8AAAD/gAAA/4AAAP+AAAD/gAAAAAEAgACAAoAEAAATAAABAQEBAQEBAQEBAQEBAQEBAQEBAQGAAAD/gAAA/4AAAACAAAAAgAAAAQAAAP+AAAD/gAAAAIAAAACAAAAAgACAAAABAAAAAIAAAAEAAAAAgAAA/4AAAP8AAAD/gAAA/wAAAP+AAAAAAQEAAIACAAQAAAMAAAEBAQEBAAAAAQAAAACAA4AAAPyAAAAAAQEAAIADAAQAABMAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQAAAACAAAAAgAAA/4AAAP+AAAABAAAAAIAAAACAAAD/gAAA/4AAAACAAIAAAAEAAAAAgAAAAQAAAACAAAD/gAAA/wAAAP+AAAD/AAAA/4AAAAABAAABAAOAAwAAEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQECAAAA/4AAAP8AAAD/gAAAAIAAAAEAAAAAgAAAAQAAAACAAAD/gAAAAQAAgAAAAIAAAP+AAAABAAAAAIAAAP+AAAD/gAAAAIAAAP8AAAD/gAAAAAIBAAKAAgAEAAAFAAkAAAEBAQEBAQEBAQEBAAAAAIAAAACAAAD/gAAAAIAAAAKAAQAAAP+AAAD/gAEAAIAAAP+AAAAAAgGAAoACgAQAAAMACQAAAQEBAQEBAQEBAQGAAAAAgAAAAAAAAP+AAAABAAAAAoAAgAAA/4AAgACAAAAAgAAA/wAAAAAEAIACgAMABAAABQALAA8AEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEAgAAAAIAAAACAAAAAgAAAAIAAAACAAAD+AAAAAIAAAAEAAAAAgAAAAoABAAAA/4AAAP+AAAABAAAA/4AAAP+AAQAAgAAA/4AAAACAAAD/gAAEAIACgAMABAAAAwAHAA0AEwAAAQEBAQEBAQEBAQEBAQEBAQEBAQEAgAAAAIAAAAEAAAAAgAAA/oAAAP+AAAABAAAAAQAAAP+AAAABAAAAAoAAgAAA/4AAAACAAAD/gACAAIAAAACAAAD/AAAAAIAAAACAAAD/AAAAADACRgAAAAAAAAAAACgAAAAAAAAAAAABABIAKAAAAAAAAAACAA4AOgAAAAAAAAADABIASAAAAAAAAAAEACIAWgAAAAAAAAAFABYAfAAAAAAAAAAGABAAkgAAAAAAAAAHAFYAogAAAAAAAAAIACwA+AAAAAAAAAAJAAoBJAAAAAAAAAAKAEwBLgAAAAAAAAALAHgBegAAAAAAAAAMAG4B8gAAAAAAAAANACQCYAAAAAAAAAATAFIChAAAAAAAAAEAABgC1gABAAAAAAAAABQC7gABAAAAAAABAAkDAgABAAAAAAACAAcDCwABAAAAAAADAAkDEgABAAAAAAAEABEDGwABAAAAAAAFAAsDLAABAAAAAAAGAAgDNwABAAAAAAAHACsDPwABAAAAAAAIABYDagABAAAAAAAJAAUDgAABAAAAAAAKACUDhQABAAAAAAALADwDqgABAAAAAAAMADcD5gABAAAAAAANABIEHQABAAAAAAATACkELwABAAAAAAEAAAwEWAADAAEECQAAACgEZAADAAEECQABABIEjAADAAEECQACAA4EngADAAEECQADABIErAADAAEECQAEACIEvgADAAEECQAFABYE4AADAAEECQAGABAE9gADAAEECQAHAFYFBgADAAEECQAIACwFXAADAAEECQAJAAoFiAADAAEECQAKAEwFkgADAAEECQALAHgF3gADAAEECQAMAG4GVgADAAEECQANACQGxAADAAEECQATAFIG6AADAAEECQEAABgHOgBDAG8AcAB5AHIAaQBnAGgAdAAgAFIAdQBpAGwAeAAgADIAMAAxADUATgBFAFMAIABQAGkAeABlAGwAUgBlAGcAdQBsAGEAcgBOAEUAUwAgAFAAaQB4AGUAbABOAEUAUwAgAFAAaQB4AGUAbAAgAFIAZQBnAHUAbABhAHIAVgBlAHIAcwBpAG8AbgAgADEALgAwAE4ARQBTAFAAaQB4AGUAbABGAG8AbgB0AFMAdAByAHUAYwB0ACAAaQBzACAAYQAgAHQAcgBhAGQAZQBtAGEAcgBrACAAbwBmACAARgBvAG4AdABTAHQAcgB1AGMAdAAuAGMAbwBtAGgAdAB0AHAAcwA6AC8ALwBmAG8AbgB0AHMAdAByAHUAYwB0AC4AYwBvAG0AUgB1AGkAbAB4IBwATgBFAFMAIABQAGkAeABlAGwgHQAgAHcAYQBzACAAYgB1AGkAbAB0ACAAdwBpAHQAaAAgAEYAbwBuAHQAUwB0AHIAdQBjAHQACgBoAHQAdABwAHMAOgAvAC8AZgBvAG4AdABzAHQAcgB1AGMAdAAuAGMAbwBtAC8AZgBvAG4AdABzAHQAcgB1AGMAdABpAG8AbgBzAC8AcwBoAG8AdwAvADEAMQA5ADgANAA0ADUALwBuAGUAcwBfAHAAaQB4AGUAbABoAHQAdABwAHMAOgAvAC8AZgBvAG4AdABzAHQAcgB1AGMAdAAuAGMAbwBtAC8AZgBvAG4AdABzAHQAcgB1AGMAdABvAHIAcwAvAHMAaABvAHcALwAxADEAOQA3ADcAMAA0AC8AcgB1AGkAbAB4AEYAbwBuAHQAUwB0AHIAdQBjAHQAIABMAGkAYwBlAG4AcwBlAEYAaQB2AGUAIABiAGkAZwAgAHEAdQBhAGMAawBpAG4AZwAgAHoAZQBwAGgAeQByAHMAIABqAG8AbAB0ACAAbQB5ACAAdwBhAHgAIABiAGUAZABBAHcAZwBCAGYAVgAxAGcAVwB3AD0APUNvcHlyaWdodCBSdWlseCAyMDE1TkVTIFBpeGVsUmVndWxhck5FUyBQaXhlbE5FUyBQaXhlbCBSZWd1bGFyVmVyc2lvbiAxLjBORVNQaXhlbEZvbnRTdHJ1Y3QgaXMgYSB0cmFkZW1hcmsgb2YgRm9udFN0cnVjdC5jb21odHRwczovL2ZvbnRzdHJ1Y3QuY29tUnVpbHjSTkVTIFBpeGVs0yB3YXMgYnVpbHQgd2l0aCBGb250U3RydWN0aHR0cHM6Ly9mb250c3RydWN0LmNvbS9mb250c3RydWN0aW9ucy9zaG93LzExOTg0NDUvbmVzX3BpeGVsaHR0cHM6Ly9mb250c3RydWN0LmNvbS9mb250c3RydWN0b3JzL3Nob3cvMTE5NzcwNC9ydWlseEZvbnRTdHJ1Y3QgTGljZW5zZUZpdmUgYmlnIHF1YWNraW5nIHplcGh5cnMgam9sdCBteSB3YXggYmVkQXdnQmZWMWdXdz09AEMAbwBwAHkAcgBpAGcAaAB0ACAAUgB1AGkAbAB4ACAAMgAwADEANQBOAEUAUwAgAFAAaQB4AGUAbABSAGUAZwB1AGwAYQByAE4ARQBTACAAUABpAHgAZQBsAE4ARQBTACAAUABpAHgAZQBsACAAUgBlAGcAdQBsAGEAcgBWAGUAcgBzAGkAbwBuACAAMQAuADAATgBFAFMAUABpAHgAZQBsAEYAbwBuAHQAUwB0AHIAdQBjAHQAIABpAHMAIABhACAAdAByAGEAZABlAG0AYQByAGsAIABvAGYAIABGAG8AbgB0AFMAdAByAHUAYwB0AC4AYwBvAG0AaAB0AHQAcABzADoALwAvAGYAbwBuAHQAcwB0AHIAdQBjAHQALgBjAG8AbQBSAHUAaQBsAHggHABOAEUAUwAgAFAAaQB4AGUAbCAdACAAdwBhAHMAIABiAHUAaQBsAHQAIAB3AGkAdABoACAARgBvAG4AdABTAHQAcgB1AGMAdAAKAGgAdAB0AHAAcwA6AC8ALwBmAG8AbgB0AHMAdAByAHUAYwB0AC4AYwBvAG0ALwBmAG8AbgB0AHMAdAByAHUAYwB0AGkAbwBuAHMALwBzAGgAbwB3AC8AMQAxADkAOAA0ADQANQAvAG4AZQBzAF8AcABpAHgAZQBsAGgAdAB0AHAAcwA6AC8ALwBmAG8AbgB0AHMAdAByAHUAYwB0AC4AYwBvAG0ALwBmAG8AbgB0AHMAdAByAHUAYwB0AG8AcgBzAC8AcwBoAG8AdwAvADEAMQA5ADcANwAwADQALwByAHUAaQBsAHgARgBvAG4AdABTAHQAcgB1AGMAdAAgAEwAaQBjAGUAbgBzAGUARgBpAHYAZQAgAGIAaQBnACAAcQB1AGEAYwBrAGkAbgBnACAAegBlAHAAaAB5AHIAcwAgAGoAbwBsAHQAIABtAHkAIAB3AGEAeAAgAGIAZQBkAEEAdwBnAEIAZgBWADEAZwBXAHcAPQA9AAMAAAAAAAAAZgAzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA==) format('truetype');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'rajdhani';
+  src: url('./font.ttf') format('truetype');
+  font-display: block;
+}
+
+:root {
+  --stage-lo: #16110d;
+  --stage-hi: #241a12;
+  --paper: #f2e8d8;
+  --paper-dim: #b8ac98;
+  --ink: #2a1f16;
+  --ink-soft: rgba(20, 14, 9, 0.62);
+  --red: #e0523a;
+  --blue: #3f7cc4;
+  --green: #45a85e;
+  --yellow: #ddc531;
+  --amber: #e8a33d;
+  --ghost: #8a7f72;
+  --hudscale: 1;
+  /* chrome measures derive off the CONTAINER via --hudscale, not the viewport */
+  --u: calc(1px * var(--hudscale));
+  --pixfont: 'rajdhani', 'Segoe UI', system-ui, sans-serif;
+  --finefont: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* The letterbox around the composition — warm near-black, NEVER pure #000.
+     The Observatory embed hands us an arbitrary box; the fixed-aspect stage is
+     centered inside it and this warm tone fills whatever is left over. */
+  background: #120d09;
+  color: var(--paper);
+  font-family: var(--finefont);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The embed box. The stage is ONE fixed-aspect composition centered inside it;
+   board + every overlay live in the stage and scale together as a single unit
+   (§2/L82: chrome sizes off the CONTAINER, not the viewport), so overlays never
+   drift from the graphics at any embed size. */
+#viewport {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#stage {
+  position: relative;
+  /* width/height are set in px by relayout() to the board's native aspect
+     (1235:659) fitted into #viewport; the canvas fills it exactly (matching
+     aspect → no internal letterbox) and all chrome is pinned in this space. */
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(120% 90% at 50% 38%, var(--stage-hi) 0%, var(--stage-lo) 72%);
+  overflow: hidden;
+}
+
+/* The board fills the frame ABOVE the reserved transport band; broadcast_core
+   letterboxes it to native aspect. --band is the bottom strip (set by relayout)
+   where the transport lives, so no chrome ever sits over play. */
+#board {
+  position: absolute;
+  left: 0;
+  /* canvas is a replaced element: `inset` won't stretch it, so size explicitly.
+     The board sits BETWEEN the reserved scorebug band (top) and transport band
+     (bottom), so no chrome ever overlaps play. */
+  top: var(--topband, 0px);
+  width: 100%;
+  height: calc(100% - var(--topband, 0px) - var(--band, 0px));
+  display: block;
+  image-rendering: pixelated;
+  /* One-finger drags belong to the PAGE while the board is fitted; syncTouchAction
+     takes them back (touch-action: none) once there is somewhere to pan. Neither
+     value permits pinch-zoom, so the second finger always reaches our handler
+     instead of zooming the document. */
+  touch-action: pan-x pan-y;
+}
+
+/* A soft light pool focuses the eye on the arena (not a literal set). Matches
+   the board area so it never darkens the reserved transport band below. */
+#lightpool {
+  position: absolute;
+  inset: var(--topband, 0px) 0 var(--band, 0px) 0;
+  pointer-events: none;
+  background:
+    radial-gradient(70% 58% at 50% 46%, transparent 40%, rgba(12, 8, 5, 0.34) 100%);
+  z-index: 2;
+}
+
+/* CRT phosphor grain drift — ambient, paused under prefers-reduced-motion. */
+#grain {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  opacity: 0.05;
+  z-index: 3;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.5) 0 1px, transparent 1px 3px);
+  animation: graindrift 7s steps(4) infinite;
+}
+@keyframes graindrift { to { transform: translateY(3px); } }
+
+#chrome {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  font-family: var(--pixfont);
+}
+#chrome > * { pointer-events: auto; }
+
+/* Team color utility: any chrome element carrying a team-name class exposes
+   that team's tint as --tc, and every team-colored rule below reads
+   var(--tc, <neutral fallback>). Supporting a new team = one line here plus
+   its art — no per-team selector pairs anywhere else. */
+.red { --tc: var(--red); }
+.blue { --tc: var(--blue); }
+.green { --tc: var(--green); }
+.yellow { --tc: var(--yellow); }
+
+/* ---------- 1. TOP-BAND SCOREBUG ---------- */
+#scorebug {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  display: grid;
+  /* minmax(0,1fr), NOT 1fr: a bare 1fr track floors at its content's min-content
+     width, so a long team name would blow the side track out and shove the center
+     clock off-center. minmax(0,…) lets each side shrink to 0 and clip via the
+     name's own ellipsis at the TRUE track edge — the name then uses all the plate
+     room there actually is, instead of an arbitrary hard cap. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  /* Shrink the whole scorebug group (names, lives numerals, labels, squad pips,
+     clock) 20% by scaling the local unit — every measure below derives from --u,
+     so one override rescales the band without touching per-element sizes. */
+  --u: calc(1px * var(--hudscale) * 0.8);
+  gap: calc(6 * var(--u));
+  padding: calc(6 * var(--u)) calc(12 * var(--u)) calc(7 * var(--u));
+  /* Dedicated top band: a solid warm-dark strip that lives ABOVE the board (its
+     measured height = --topband, reserved by relayout), so the scorebug never
+     covers play — grenades/players at the top rows stay fully visible. Mirrors
+     the bottom transport band. */
+  box-sizing: border-box;
+  background: var(--stage-lo);
+  box-shadow: inset 0 calc(-1 * var(--u)) 0 rgba(242, 232, 216, 0.06);
+}
+
+/* One side of the scorebug: one plate per side for classic red/blue (exactly
+   the old layout); a 3-4 team game puts BOTH of a side's plates on the same
+   row (outer team at the screen edge, inner team beside the clock), so all
+   four teams read on one line across the band. */
+.plates {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(5 * var(--u));
+  min-width: 0;
+}
+.plates.row { flex-direction: row; align-items: center; gap: calc(18 * var(--u)); }
+.plates.row .plate { flex: 1 1 0; }
+.plate {
+  display: flex;
+  align-items: center;
+  gap: calc(9 * var(--u));
+  min-width: 0;
+}
+/* Orientation is a SIDE property, not a color property: right-side plates
+   mirror so both team names stay innermost, flanking the clock. */
+.plate.side-r { flex-direction: row-reverse; text-align: right; }
+
+.plate .team-id { min-width: 0; }
+.plate .team-name {
+  font-family: var(--pixfont);
+  font-size: calc(16 * var(--u));
+  letter-spacing: 0.5px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Inline with Lives + count on ONE row. Let the name shrink and ellipsis so a
+     long policy name never pushes the label/count off the plate; the label and
+     numeral hold their size. Full name still reads in the CARRYING line + roster.
+     No max-width: the minmax(0,1fr) side track already bounds it, so the name
+     grows to the full plate width and only ellipsizes when it genuinely runs out
+     of room — not at an arbitrary early cap. */
+  flex: 0 1 auto;
+  min-width: 0;
+  text-shadow: 0 calc(2 * var(--u)) 0 var(--ink);
+}
+.plate .team-name { color: var(--tc, var(--paper)); }
+
+/* One baseline row with the TEAM NAME innermost (toward the center clock):
+   a left plate reads "32 LIVES RED", a right plate reads "BLUE LIVES 32", so
+   names flank the clock. Left reverses; right keeps DOM order (name → label → num). */
+.plate .lives-line {
+  display: flex;
+  align-items: baseline;
+  gap: calc(6 * var(--u));
+}
+.plate.side-l .lives-line { flex-direction: row-reverse; }
+/* Team-perk badges, riding the squad-pip strip (the pip strip IS the life
+   meter — see renderSquad). Each policy's pips form one .squad-pol block
+   with that policy's badges beside them; the center-adjacent pips with
+   badges flanking OUTSIDE come from renderSquad's fixed DOM order
+   (group 0: icons,pips; group 1: pips,icons), never from side-reversal CSS
+   — see the .squad-pol comment below for why mirroring was removed. Badges
+   keep each perk's own fixed color (never team-tinted). */
+/* Handicap chip: an amber pill next to the team name when that team is
+   weakened. The full delta breakdown rides in the native `title` on hover
+   (cursor:help hints it). Hidden entirely for an unhandicapped team. */
+/* Squad strip: ONE pip per player (8). Each pip is a tiny pie: the filled
+   wedge is that seat's remaining lives (full square = all lives, a sliver =
+   last life), dim = down-but-respawning, hollow = eliminated. The strip is
+   the "who's left" read; the big numeral is the exact lives count. Each pip
+   is clickable → POV lens (fog-honesty). */
+/* Policy groups keep the HEADLINE's left-to-right order on BOTH plates — the
+   first-named policy's pips are always the left group, so a badge reads as
+   belonging to the name it sits under. (No side mirroring: an early version
+   reversed the strip on side-l for clock-symmetry, which visually attached
+   the left badges to the wrong policy name.) */
+/* faint frame so a part-filled pie still reads as one square slot */
+
+/* flag-state icon — HOME (on pedestal) / TAKEN (riding a carrier) /
+   CAPTURED (GV32: retired, team eliminated — drawn like TAKEN). F2. */
+/* transform-box:fill-box so SVG transforms pivot about the cloth's own box,
+   not the viewBox edge (else the flip mirrors off-screen — invisible-at-vote). */
+
+/* center clock pill + phase */
+.clock {
+  position: relative; /* anchors the fast-forward mini indicator */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: calc(3 * var(--u));
+  padding-top: calc(1 * var(--u));
+}
+/* Tiny amber ▸▸ riding the right of the match clock while skip-lulls is
+   actually fast-forwarding — the at-a-glance "time is compressed" cue. */
+.ffwd-mini {
+  display: none;
+  position: absolute;
+  left: calc(100% + 5 * var(--u));
+  top: calc(6 * var(--u));
+  font-family: var(--pixfont);
+  font-size: calc(12 * var(--u));
+  color: var(--amber);
+  text-shadow: 0 calc(2 * var(--u)) 0 var(--ink);
+}
+.ffwd-mini.show { display: block; }
+.clock .time {
+  font-family: var(--pixfont);
+  /* The clock is the centerpiece: with the name folded into the lives row the
+     side plates are one row shorter, so grow the time numeral into that freed
+     vertical space and let it anchor the band. */
+  font-size: calc(30 * var(--u));
+  line-height: 1;
+  color: var(--paper);
+  text-shadow: 0 calc(2 * var(--u)) 0 var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.clock .caption {
+  font-family: var(--finefont);
+  font-size: calc(8.5 * var(--u));
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  white-space: nowrap;
+}
+.clock.tiebreak-warn .time { color: var(--amber); }
+
+/* Center column holds just the clock now — the capture-chase gauge was retired
+   in favor of the two bottom carry indicators. */
+.clock-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(4 * var(--u));
+}
+
+/* Clock pill soft tick — the third chrome ambient (§11). A near-imperceptible
+   breathe on the pill, so the countdown reads as a live instrument, not a label. */
+.clock.amb { animation: clocktick 2s ease-in-out infinite; }
+@keyframes clocktick { 0%,100% { opacity: 0.94; } 50% { opacity: 1; } }
+
+/* leader pulse when a team's lives lead is >=3 */
+@keyframes leaderpulse { 0%,100% { text-shadow: none; } 50% { text-shadow: 0 0 calc(10 * var(--u)) var(--amber); } }
+
+/* Beat-pause (§11): idle systems freeze the instant a beat lands, so ambient
+   never competes with a kill/steal/capture for the eye. Applied on #stage; the
+   engine-driven board (24Hz) is untouched — only chrome ambient pauses. */
+#stage.beat-active .amb,
+
+/* ---------- 3. BANNER LANE ---------- */
+#bannerlane {
+  position: absolute;
+  top: calc(78 * var(--u));
+  left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 12;
+  min-height: calc(26 * var(--u)); /* reserved slot: layout never jumps */
+}
+.banner-chip {
+  font-family: var(--pixfont);
+  font-size: calc(13 * var(--u));
+  letter-spacing: 0.06em;
+  padding: calc(6 * var(--u)) calc(14 * var(--u));
+  color: var(--paper);
+  background: var(--ink-soft);
+  border-bottom: calc(3 * var(--u)) solid var(--amber);
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation: chippop 300ms cubic-bezier(.2,1.4,.4,1);
+}
+.banner-chip.steal { border-bottom-color: var(--amber); }
+.banner-chip.returned { border-bottom-color: var(--paper-dim); }
+.banner-chip.wipe { border-bottom-color: var(--tc, var(--red)); font-size: calc(15 * var(--u)); }
+/* the acting team's tint rides as a left accent bar (any team color) */
+.banner-chip.accent { box-shadow: inset calc(4 * var(--u)) 0 0 var(--tc, var(--amber)); }
+.banner-chip.leaving { animation: chipfade 260ms ease-in forwards; }
+@keyframes chippop { from { transform: translateY(calc(-8 * var(--u))) scale(0.9); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes chipfade { to { opacity: 0; transform: translateY(calc(-4 * var(--u))); } }
+
+/* ---------- 2. KILL FEED ---------- */
+#killfeed {
+  position: absolute;
+  /* Bottom-right, clear of the blue scorebug/roster (top) and the transport
+     bar (bottom). column-reverse so the newest row sits lowest, nearest the
+     transport, and older kills stack upward — a broadcast lower-third feed. */
+  bottom: calc(76 * var(--u));
+  right: calc(12 * var(--u));
+  display: flex;
+  flex-direction: column-reverse;
+  gap: calc(4 * var(--u));
+  align-items: flex-end;
+  width: calc(228 * var(--u));
+  min-height: calc(4 * 22 * var(--u)); /* fixed 4-row reserve */
+  z-index: 11;
+  /* Rows are display-only (no click handlers) — never let the feed intercept a
+     drag meant for the PiP or the board beneath it. */
+  pointer-events: none;
+}
+.feed-row {
+  display: flex;
+  align-items: center;
+  gap: calc(5 * var(--u));
+  padding: calc(3 * var(--u)) calc(7 * var(--u));
+  background: var(--ink-soft);
+  font-family: var(--pixfont);
+  /* A touch smaller than the scorebug type so full 8-char names stay compact;
+     everything is in --u so the row scales with the board (responsive). */
+  font-size: calc(8 * var(--u));
+  line-height: 1;
+  /* Size to content so full names never truncate; rows are right-anchored
+     (align-items:flex-end on #killfeed) so a long row grows leftward — bounded
+     by the small font + the pre-bounded 10-char name, so it can't run away. */
+  max-width: none;
+  white-space: nowrap;
+  animation: feedin 250ms cubic-bezier(.2,1.3,.5,1);
+}
+.feed-row.leaving { animation: feedout 260ms ease-in forwards; }
+@keyframes feedin { from { transform: translateX(calc(30 * var(--u))); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes feedout { to { opacity: 0; transform: translateX(calc(14 * var(--u))); } }
+.feed-row .who { white-space: nowrap; }  /* names are pre-bounded to 10 chars by shortName(); show in full, never ellipsize */
+.feed-row .who { color: var(--tc, var(--paper)); }
+.feed-row .glyph { color: var(--paper); font-size: calc(9 * var(--u)); }
+.feed-row .badge {
+  font-family: var(--finefont);
+  font-size: calc(7 * var(--u));
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: calc(1 * var(--u)) calc(4 * var(--u));
+  color: var(--stage-lo);
+  background: var(--amber);
+}
+.feed-row .badge.tk { background: var(--red); color: var(--paper); }
+
+/* Roster rails removed: per-player state now rides the scorebug squad strip
+   (the roster IS the counter, genre convention) and the board's own name tags.
+   No floating bordered rails over the arena flanks (in-world, no HUD chrome). */
+
+/* POV eye badge shown when a slot is inspected (fog-honesty lens) */
+
+/* First-person PiP inset: pinned bottom-LEFT (the killfeed owns bottom-right, so
+   they never overlap), responsive width (§2 — sized off the stage so it scales
+   with the composition). Hidden until a seat is in POV. One quiet hairline
+   frames it as a genuine window, not a decorative card. */
+/* Once dragged/resized we pin via left/top + explicit width and drop the
+   left/bottom + aspect-ratio anchors so nothing fights. */
+/* Resize grip: bottom-right corner (bottom-left is the screen edge when pinned
+   bottom-left). The ONLY child that takes pointer events, so drag-to-move works
+   everywhere else. */
+
+/* Self-status HUD: a thin bottom bar reading like a soldier's own readout —
+   name at the left, hp as pips, carried gear at the right. Sits over the floor
+   half of the raycast so it never masks the horizon action. */
+
+/* Un-fogged tactical minimap inset: top-right corner, BOARD aspect. Compact and
+   see-through so it reads as an overlay on the raycast, not a lid over it. A
+   quiet hairline frames it as a genuine window. pointer-events:none so grabbing
+   it still drags the whole PiP.
+   The width/aspect-ratio here are PRE-STREAM DEFAULTS (the classic arena) —
+   syncFpvMapShape() overwrites both from the streamed map's real w/h, because a
+   four-team board is square and a fixed 1.874:1 inset squashes it. */
+
+/* ---------- 4b. VIEW CONTROLS (zoom + minimap) ----------
+   One group, top-right, under the reserved scorebug band: the minimap sits
+   directly over the control that summoned it, so "where am I" and "how far in
+   am I" read as a single instrument instead of two scattered widgets.
+   The board is NOT scroll-zoomed — a trackpad two-finger scroll belongs to the
+   page — so these controls are the primary way in, not a fallback, and they are
+   always present. The minimap only appears once there is something off-screen
+   to locate (zoom > 1); at fit it would just be the board again, smaller. */
+
+/* Board minimap. Aspect + display come from the STREAMED board's real w/h
+   (syncMinimapShape), because a four-team board is square and a fixed 1.874:1
+   inset would squash it. See-through so it reads as an overlay on play. */
+/* The label rides INSIDE the frame rather than adding a header row above it —
+   one element, not two stacked boxes. */
+
+/* Zoom is geometric (1x..12x); the slider's travel is the LOG of it, so equal
+   thumb movement is equal perceived zoom rather than a dead left half. */
+/* Never a bare number: the readout carries its unit, and "FIT" names the state
+   the board opens in instead of showing a meaningless 1.0x. */
+
+/* ---------- 5. TRANSPORT ---------- */
+#transport {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  /* Sits in the reserved band BELOW the board — relayout() measures this strip's
+     natural height and reserves that much (--band) at the bottom of the frame, so
+     the scrubber and buttons never overlap play. A solid warm-dark strip, not a
+     fade — there is no arena underneath it to wash over. */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: calc(5 * var(--u));
+  padding: calc(8 * var(--u)) calc(12 * var(--u)) calc(8 * var(--u));
+  background: var(--stage-lo);
+  box-shadow: inset 0 calc(1 * var(--u)) 0 rgba(242, 232, 216, 0.06);
+}
+#transport.disabled { opacity: 0.35; pointer-events: none; }
+
+/* scrubber: click-to-seek track (top) over a full-timeline momentum graph.
+   The seek track and the momentum graph share the SAME 0→maxTicks x-axis, so
+   the playhead crosses the graph 1:1 with the timeline (no scrolling window). */
+.scrub {
+  position: relative;
+  height: calc(34 * var(--u));
+  cursor: pointer;
+}
+.scrub-track {
+  position: absolute;
+  left: 0; right: 0; top: calc(6 * var(--u));
+  height: calc(4 * var(--u));
+  background: rgba(242, 232, 216, 0.16);
+}
+.scrub-fill {
+  position: absolute;
+  left: 0; top: calc(6 * var(--u));
+  height: calc(4 * var(--u));
+  background: var(--paper);
+  width: 0;
+}
+.scrub-head {
+  /* spans track + graph so the playhead reads against the momentum curve */
+  position: absolute;
+  top: calc(2 * var(--u));
+  width: calc(3 * var(--u));
+  height: calc(30 * var(--u));
+  background: var(--amber);
+  transform: translateX(calc(-1.5 * var(--u)));
+  left: 0;
+  z-index: 3;
+}
+/* Full-timeline lives-lead graph, occupying the band UNDER the seek track. */
+.momentum {
+  position: absolute;
+  /* An inline <svg> is a REPLACED element: with width:auto it takes its
+     intrinsic viewBox ratio (1000×100 = 10:1) × height, NOT the left/right
+     box — so it renders ~10× its height wide (a short stub) instead of full
+     width. Pin width:100% so it spans the whole seek track, matching the
+     0→maxTicks x-axis the playhead rides. (preserveAspectRatio:none, so no
+     letterboxing when we override the ratio.) */
+  left: 0; width: 100%; top: calc(12 * var(--u));
+  height: calc(22 * var(--u));
+  display: block;
+  overflow: visible;
+}
+.momentum-label {
+  position: absolute;
+  left: 0; top: calc(13 * var(--u));
+  font-family: var(--finefont);
+  font-size: calc(6 * var(--u));
+  letter-spacing: 0.12em;
+  color: var(--paper-dim);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+}
+.beat-marker {
+  position: absolute;
+  top: 0;
+  width: calc(2 * var(--u));
+  height: calc(10 * var(--u));
+  transform: translateX(-1px);
+  z-index: 2;
+}
+/* kill ticks are short and colored by the KILLER's team (a red tick = red
+   scored a kill); team-kills and unattributable pileups stay neutral. */
+/* flag beats are colored by the FLAG's team, matching the banners ("RED
+   HEART TAKEN"): steal = full tick with a flag head, return = same tick
+   dimmed (the heart snapped home), capture = the chunky match point in the
+   CAPTURING team's color. */
+/* winner cap: a flat block just past the track's right end, colored by the
+   verdict (split for a draw), so the scrubber itself says how this ends. */
+.scrub-win {
+  display: none;
+  position: absolute;
+  right: calc(-4 * var(--u));
+  top: calc(2 * var(--u));
+  width: calc(6 * var(--u));
+  height: calc(12 * var(--u));
+  z-index: 3;
+}
+.scrub-win.show { display: block; background: var(--tc, var(--paper-dim)); }
+/* verdict chip in the transport bar: "RED WINS" next to the tick clock. */
+.win-chip {
+  display: none;
+  font-family: var(--pixfont);
+  font-size: calc(9 * var(--u));
+  padding: 0 calc(6 * var(--u));
+  white-space: nowrap;
+}
+.win-chip.show { display: inline; }
+.win-chip.show { color: var(--tc, var(--paper-dim)); }
+
+.tbar {
+  display: flex;
+  align-items: center;
+  gap: calc(5 * var(--u));
+  flex-wrap: wrap;
+}
+.tbtn {
+  font-family: var(--pixfont);
+  font-size: calc(11 * var(--u));
+  color: var(--paper);
+  background: rgba(242, 232, 216, 0.08);
+  border: none;
+  padding: calc(5 * var(--u)) calc(8 * var(--u));
+  min-width: calc(26 * var(--u));
+  cursor: pointer;
+  line-height: 1;
+}
+.tbtn:hover { background: rgba(242, 232, 216, 0.2); }
+.tbtn.on { color: var(--amber); box-shadow: inset 0 calc(-2 * var(--u)) 0 var(--amber); }
+.tbtn svg { width: calc(12 * var(--u)); height: calc(12 * var(--u)); display: block; fill: currentColor; }
+.tsep { flex: 1; }
+/* skip-lulls: dim shading over the quiet scrubber stretches, plus an amber
+   "skipping" chip in the tbar while the server is actually fast-forwarding. */
+.lull-span {
+  position: absolute;
+  top: calc(6 * var(--u));
+  height: calc(4 * var(--u));
+  background: rgba(18, 13, 9, 0.6);
+  pointer-events: none;
+}
+.ffwd-chip {
+  display: none;
+  font-family: var(--pixfont);
+  font-size: calc(9 * var(--u));
+  color: var(--amber);
+  padding: 0 calc(6 * var(--u));
+  white-space: nowrap;
+}
+.ffwd-chip.show { display: inline; }
+.speedchips { display: flex; gap: calc(2 * var(--u)); }
+.chip {
+  font-family: var(--pixfont);
+  font-size: calc(9 * var(--u));
+  color: var(--paper-dim);
+  background: rgba(242, 232, 216, 0.06);
+  border: none;
+  padding: calc(4 * var(--u)) calc(5 * var(--u));
+  cursor: pointer;
+  line-height: 1;
+}
+.chip.on { color: var(--stage-lo); background: var(--amber); }
+.tick-clock {
+  font-family: var(--pixfont);
+  font-size: calc(9 * var(--u));
+  color: var(--paper-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* hash-mismatch warning (top center) — honest fidelity flag */
+#mmwarn {
+  position: absolute;
+  top: calc(40 * var(--u));
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  padding: calc(3 * var(--u)) calc(9 * var(--u));
+  background: var(--red);
+  color: var(--paper);
+  font-family: var(--finefont);
+  font-size: calc(8 * var(--u));
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 20;
+}
+#mmwarn.on { display: block; }
+
+/* ---------- 6. END-CARD ---------- */
+#endcard {
+  position: absolute;
+  /* Cover the BOARD region only — never the scorebug or transport bands. The
+     transport must stay clickable under the end card so the scrubber can jump
+     back into the match from the score screen (the card cancels server-side
+     end-hold on seek). --topband/--band are the measured band heights that
+     relayout() maintains on :root; in embed mode both are 0 and the card
+     spans the whole iframe as before. */
+  left: 0;
+  right: 0;
+  top: var(--topband, 0px);
+  bottom: var(--band, 0px);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(12 * var(--u));
+  background: radial-gradient(80% 70% at 50% 45%, rgba(16, 11, 7, 0.82), rgba(9, 6, 3, 0.95));
+  z-index: 30;
+  padding: calc(20 * var(--u));
+  text-align: center;
+}
+#endcard.on { display: flex; animation: cardfade 420ms ease-out; }
+@keyframes cardfade { from { opacity: 0; } to { opacity: 1; } }
+#endcard .headline { color: var(--tc, var(--ghost)); }
+#endcard .headline {
+  font-family: var(--pixfont);
+  font-size: calc(30 * var(--u));
+  line-height: 1.05;
+  color: var(--paper);
+  text-shadow: 0 calc(3 * var(--u)) 0 var(--ink);
+  /* headline now carries the (possibly long) policy name — never wrap/overflow */
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#endcard .how {
+  font-family: var(--finefont);
+  font-size: calc(11 * var(--u));
+  letter-spacing: 0.05em;
+  color: var(--paper-dim);
+  max-width: calc(360 * var(--u));
+}
+/* win-condition chip — names HOW the match ended (heart / elimination / time) */
+#endcard .wincond {
+  font-family: var(--pixfont);
+  font-size: calc(10 * var(--u));
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--amber);
+  padding: calc(3 * var(--u)) calc(10 * var(--u));
+  box-shadow: inset 0 0 0 1px rgba(232, 163, 61, 0.5);
+}
+#endcard .how {
+  margin-top: calc(-4 * var(--u));
+}
+/* match-stats scoreboard — one panel per team, winner ringed in amber.
+   Wraps + centers so a 3rd/4th team panel folds to a second row. */
+#endcard .ec-teams {
+  display: flex;
+  gap: calc(22 * var(--u));
+  align-items: stretch;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+#endcard .ec-team {
+  width: calc(215 * var(--u));
+  padding: calc(9 * var(--u)) calc(12 * var(--u));
+  background: rgba(20, 14, 9, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(242, 232, 216, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: calc(5 * var(--u));
+  text-align: left;
+}
+#endcard .ec-team.win {
+  box-shadow: inset 0 0 0 1px rgba(232, 163, 61, 0.65),
+    0 0 calc(14 * var(--u)) rgba(232, 163, 61, 0.18);
+}
+#endcard .ec-tname {
+  font-family: var(--pixfont);
+  font-size: calc(13 * var(--u));
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#endcard .ec-tname { color: var(--tc, var(--paper)); }
+#endcard .ec-lives { display: flex; align-items: baseline; gap: calc(6 * var(--u)); font-family: var(--pixfont); }
+#endcard .fl-num { font-size: calc(22 * var(--u)); color: var(--tc, var(--paper)); }
+/* mixed-team policy subheader: groups a team panel's rows by policy when a
+   team seats more than one (CTF-Doubles: two policies per side) */
+#endcard .ec-pol {
+  font-family: var(--finefont);
+  font-size: calc(7.5 * var(--u));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  margin-top: calc(3 * var(--u));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#endcard .fl-cap {
+  font-family: var(--finefont);
+  font-size: calc(8 * var(--u));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+}
+#endcard .ec-thead,
+#endcard .ec-row {
+  display: grid;
+  grid-template-columns: 1fr calc(22 * var(--u)) calc(22 * var(--u)) calc(26 * var(--u)) calc(26 * var(--u));
+  gap: calc(5 * var(--u));
+  align-items: center;
+}
+#endcard .ec-thead {
+  font-family: var(--finefont);
+  font-size: calc(7.5 * var(--u));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  border-bottom: 1px solid rgba(242, 232, 216, 0.18);
+  padding-bottom: calc(3 * var(--u));
+}
+#endcard .ec-thead span:not(:first-child) { text-align: center; }
+#endcard .ec-row {
+  font-family: var(--pixfont);
+  font-size: calc(10.5 * var(--u));
+  color: var(--paper);
+  padding: calc(1.5 * var(--u)) 0;
+}
+#endcard .ec-row .n { text-align: center; font-variant-numeric: tabular-nums; }
+/* a 4-team match can retire several rival hearts (GV32: a capture eliminates
+   its team and play continues), so the Cap cell lays its hearts in a row,
+   later hearts shingling over earlier ones so three still fit the column */
+#endcard .ec-row .n.cap {
+  color: var(--amber);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#endcard .ec-row .n.cap > * + * { margin-left: calc(-7 * var(--u)); }
+#endcard .ec-row .pname {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--paper-dim);
+}
+#endcard .ec-row.mvp .pname { color: var(--amber); }
+/* name cell: name ellipsizes (but keeps a readable floor), the capture mark
+   + honor badges ride after it; a pathological pileup clips inside the cell
+   rather than bleeding into the K column */
+#endcard .ec-row .pcell {
+  display: flex;
+  align-items: center;
+  gap: calc(3 * var(--u));
+  min-width: 0;
+  overflow: hidden;
+}
+#endcard .ec-row .pcell .pname { flex: 0 1 auto; min-width: 7ch; }
+/* honor badges: baked 2x pixel-art icons (nano-banana), luminance-keyed to
+   transparency; a repeat count rides after the icon as fine print */
+#endcard .ec-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(1 * var(--u));
+  font-family: var(--finefont);
+  font-size: calc(7.5 * var(--u));
+  color: var(--paper-dim);
+  font-variant-numeric: tabular-nums;
+}
+#endcard .ec-badge::before {
+  content: '';
+  display: block;
+  height: calc(14 * var(--u));
+  background-size: contain;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+#endcard .ec-badge.bs::before { width: calc(10.5 * var(--u)); background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAcCAYAAACOGPReAAAFD0lEQVR42qWWX2wc1RXGf2dmZ2d3/TfO2qzjOEkdOxGhEJGIFhIodVqME2goBAfVRFUFUlS1D62qVv2jisXiCb9VraiIxEOlthKOKrV9AARSTR8qEAIKliCghpAG0drGya4d7+7s3N39+rBZY7VNGujVHc2VRufTOd/5znfH+JRLYAbSHffeT6Z8N/uvu56lxDGbnj7l8X8s5fMe9UYNmUddORYW9gDYpwITZob02NggFg7wUqLC+cWbKV/8tc3NlbyrKVMTE74uJbD2fnxfB6IHnwwHqwv28l+etLm5EsD/BDWQnTxZN1AL0AyxEvbgeyN4Jj7yVpTHa31PXL5EmZlJE4dypL1jtHU+Zb/8bUFgyo/1EHp9JJJFSvFrNvVcudW4K2f66KNNvtusA8e1/L10nw4d2moghr0aXjCIGhds6rkV5fFagJ+oURo/ciPEN9DQKjn7G/1Lvj3+0l/XZ3jVoAIjnzdef30rVYZR6jT9lZ9y4NZnef/Mi9B/AaawKRqfCNRAOjI+zUW/Sh9vUV9N8/Vjt/DMC/P285lH/j3mit3XxIRvID0w/iVqFoK3CrXvc8/YD7lp+zKL1T/p8OEf6NjBb68Nw5VA1/T44Hgnjpup+RU2RHsZ7G1n3x6PSu139vQfXiT038X8wvrYxHoJNTVoTdLzebOpqbqOju/EedtI+kt4tW184fP9pMJp6zvwsjSbMBv94zoJNi7L6RqPk3cNUeY41WCZztX9bLtmJw9N+OzYvxuyq2Ctrf/gVJIvaXukaIfOnUsDpttvT1Cr30VVISz3sbE9xzeODNPd8YRZ78VmUQgpKWm4UqkMS/IBEpcO28ANhM6DbLYKnCOXGaIY76C3d5lsx2GGNneT7TlDsfC0lP+4F2V6yZBLpVItGs8mgF0OlwFqQRDA2bPzBpJjjIgVfvTQKBszwySVprTyiI3c+4E0mwDqAGT4J7gBCDznXE8QBGnPOdeFI8RRda7sopGRAX153yZkuzDVeeH5LnLb03QN/J5i8RfNho7WzUySPGCXc3hAFASEzrnORBwHp9uCuG/+1Kn3crWa9MYrQ2Q6HyayC/R5tzHQ00vhLDSSP7EbHixIk00vLZU2Ab04OoMgeBOI4zjY4RyLifZ2m9fs7FL/6GgNQPeMPUA5WSUo55g8+FnGvpitz5/P+++8e0avvhrEcXytpLRzTgEsEXAKqJtZXdJbYWj1psAn8O0kdX3t7lv4KLqfRhW+c98kd96W48N/fO/80Fee2kjUR9WShKErU65kyMybWW1VyrXBAPC2mVUkmWlmxrejR+sandyKv/gtBjK7OXrHXu68NcuHhcfYMjpNFGWdr61BkK4TUyTJe8sspzIuMxQQBGXHB5kMC5cybk6RDuz9HJb6JuM37eHhr+7GD//Mavk3bDrwK4gGIRUTx72YpQmCxUqlEqfTaQE+sAqsmFl1zaX0xI8nGew/QXZDG1typ+lof4fG0Hfp6jsDJAFXonRNG8nPAH6VxlJIeBpoNIePLUDFzBZat4Xp/ed/Rld7mnT7HKnrn+TECTh+fAuustlBHRI0gsaFMLYkyaQAhyNDQMo5Z1JQSiZ5ozX3V7iCFRSLxQ2SuiR1lMvlQUmDhUKhO4q0U1K7pK4o0s5CodD9XwBmfM3OJqQZX8Kkj01GUqokba6qeqOkNECkaCSKol2FQqG75WxX+bMgu/Rsqkq7JYXr7bFS0VBVuu5y8f8CyPZwOPj4umUAAAAASUVORK5CYII="); }
+#endcard .ec-row .n.clstr { color: var(--amber); }
+/* a team without baked heart art gets a tinted glyph instead (fallback) */
+/* loop countdown — present only while the server holds the end segment */
+#endcard .ec-replay {
+  font-family: var(--finefont);
+  font-size: calc(9 * var(--u));
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  min-height: calc(12 * var(--u));
+}
+#endcard .ec-replay b { color: var(--paper); font-variant-numeric: tabular-nums; }
+
+/* connection status — fine print, lower-left */
+#status {
+  position: absolute;
+  left: calc(10 * var(--u));
+  bottom: calc(62 * var(--u));
+  font-family: var(--finefont);
+  font-size: calc(8 * var(--u));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ghost);
+  /* above the locker-room curtain (25): connection state stays readable
+     while the pre-load scene is up */
+  z-index: 26;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms;
+}
+#status.show { opacity: 1; }
+
+/* ============================================================
+   PRE-LOAD CURTAIN — THE BOT LOCKER ROOM
+   The wasm/replay boot can take seconds; instead of a dark board
+   captioned "Warming up", the stage opens on the backstage room
+   UNDER the arena: the four cogs prepping their paintball markers
+   in a lamp-lit locker room. The scene is nanobanana-generated
+   art (art/lockerroom/ — same warm Ink & Print world as the
+   dungeon wall textures): ONE static empty-room plate (bg.jpg)
+   with five alpha-sprite poses per cog (<bot>_<pose>.webp)
+   layered on top and cycled per bot (see .lk-art below).
+   Dismissed by the first ingested frame (dismissLockerRoom).
+   Sits UNDER #status (fine-print
+   connection state stays readable) and #mmwarn; shown in embed
+   mode too — it IS the League Replayer's lit floor while loading.
+   ============================================================ */
+#lockerroom {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  overflow: hidden;
+  font-family: var(--pixfont);
+  background: radial-gradient(120% 95% at 50% 30%, var(--stage-hi) 0%, var(--stage-lo) 55%, #100b07 100%);
+  opacity: 1;
+  transition: opacity 600ms ease;
+}
+#lockerroom.gone { opacity: 0; pointer-events: none; }
+
+/* hanging-lamp light: an amber pool over the room + a low bounce off the
+   floor, with the occasional basement-fixture flicker */
+#lockerroom .lk-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(46% 60% at 50% 28%, rgba(232, 163, 61, 0.15), transparent 70%),
+    radial-gradient(62% 26% at 50% 88%, rgba(232, 163, 61, 0.08), transparent 75%);
+  animation: lk-flicker 9s linear infinite;
+}
+@keyframes lk-flicker {
+  0%, 86%, 90%, 95%, 100% { opacity: 1; }
+  88% { opacity: 0.78; }
+  93% { opacity: 0.9; }
+}
+
+/* The scene: ONE static background plate (bg.jpg — the empty room) with
+   the four cogs layered on top as freestanding alpha sprites, five
+   generated poses each. Every bot runs its own pose carousel (distinct
+   cycle length + phase, crossfaded windows) over its own idle sway, so
+   the composed scene never repeats for minutes — smooth continuous
+   animation over a rock-solid background. A soft radial mask melts the
+   plate's edges into the stage gradient, and the whole scene breathes
+   on a slow zoom. */
+#lockerroom .lk-art {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: lk-breathe 14s ease-in-out infinite alternate;
+}
+@keyframes lk-breathe { from { transform: scale(1); } to { transform: scale(1.03); } }
+#lockerroom .lk-bg {
+  display: block;
+  max-width: 94%;
+  max-height: 96%;
+  -webkit-mask-image: radial-gradient(ellipse 74% 80% at 50% 48%, #000 50%, transparent 99%);
+  mask-image: radial-gradient(ellipse 74% 80% at 50% 48%, #000 50%, transparent 99%);
+}
+/* sprite plane, fitted to the bg image's box by fitLockerSprites() */
+#lockerroom .lk-sprites { position: absolute; }
+/* one wrapper per bot (anchored over its floor spot, carries the idle
+   sway), its pose sprites stacked bottom-center inside */
+#lockerroom .lk-boto { position: absolute; transform-origin: 50% 100%; }
+#lockerroom .lk-boto img {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  opacity: 0;
+  animation: lk-pose var(--cyc, 4s) linear infinite;
+}
+/* each pose owns a crossfaded 1/5 window of its bot's cycle (delay-shifted) */
+@keyframes lk-pose {
+  0% { opacity: 0; }
+  4% { opacity: 1; }
+  20% { opacity: 1; }
+  24% { opacity: 0; }
+  100% { opacity: 0; }
+}
+/* idle sway per seat: subtle, distinct tempi so the row never metronomes */
+@keyframes lk-sway { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-1.5px) rotate(0.6deg); } }
+#lockerroom .lk-boto:nth-child(1) { animation: lk-sway 3.4s ease-in-out infinite; }
+#lockerroom .lk-boto:nth-child(2) { animation: lk-sway 2.9s ease-in-out -1.2s infinite; }
+#lockerroom .lk-boto:nth-child(3) { animation: lk-sway 3.8s ease-in-out -0.6s infinite; }
+#lockerroom .lk-boto:nth-child(4) { animation: lk-sway 3.1s ease-in-out -2s infinite; }
+
+/* rotating prep-talk line + amber scan bar + fine print, over the floor */
+#lockerroom .lk-cap {
+  position: absolute;
+  bottom: 13%;
+  left: 0; right: 0;
+  text-align: center;
+  font-family: var(--finefont);
+  font-size: calc(11 * var(--u));
+  color: var(--paper-dim);
+  text-shadow: 0 1px 0 rgba(10, 7, 4, 0.8), 0 0 calc(8 * var(--u)) rgba(10, 7, 4, 0.9);
+  transition: opacity 150ms;
+}
+#lockerroom .lk-cap.swap { opacity: 0; }
+#lockerroom .lk-bar {
+  position: absolute;
+  bottom: 10.2%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(150 * var(--u));
+  height: calc(3 * var(--u));
+  background: rgba(242, 232, 216, 0.12);
+  border-radius: calc(2 * var(--u));
+  overflow: hidden;
+}
+#lockerroom .lk-bar i {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -34%;
+  width: 34%;
+  border-radius: calc(2 * var(--u));
+  background: linear-gradient(90deg, transparent, var(--amber), transparent);
+  animation: lk-scan 1.6s ease-in-out infinite alternate;
+}
+@keyframes lk-scan { from { left: -34%; } to { left: 100%; } }
+#lockerroom .lk-sub {
+  position: absolute;
+  bottom: 6.4%;
+  left: 0; right: 0;
+  text-align: center;
+  font-family: var(--finefont);
+  font-size: calc(7.5 * var(--u));
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ghost);
+  text-shadow: 0 1px 0 rgba(10, 7, 4, 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #lockerroom * { animation: none !important; }
+  /* with the carousels stopped, hold each bot's rest pose over the plate */
+  #lockerroom .lk-boto img:first-child { opacity: 1; }
+}
+
+/* ============================================================
+   The replay is ONE fixed-aspect composition (relayout() sizes #stage to the
+   board's 1235:659 aspect inside the embed box), so there is no portrait/reflow
+   case: at every container shape the board and its overlays scale together as a
+   single unit and stay pinned. The only responsive lever is chrome DENSITY —
+   `.tiny` eases the reserves so the 640×360 floor stays legible.
+   ============================================================ */
+/* very small floor (≤620px stage): tighten reserves */
+#stage.tiny #killfeed { min-height: calc(3 * 20 * var(--u)); width: calc(190 * var(--u)); }
+
+@media (prefers-reduced-motion: reduce) {
+  #grain, .clock.amb { animation: none; }
+  .banner-chip, .feed-row { animation-duration: 1ms; }
+}
+
+/* ============================================================
+   EMBED MODE — inside the League Replayer shell (?embed=1)
+   The shell owns the walls + team headers + KDA + standings + transport, drawn
+   from the postMessage frame stream. Here we show the board (the lit pit floor)
+   PLUS the designed broadcast feedback layer that belongs over the play area —
+   the kill feed and the flag-event banner lane (lower-third / center wipes).
+   We hide only the chrome the shell re-draws (scorebug/transport) and the
+   ambient light-pool/grain/status, and let the board fill the embed box.
+   ============================================================ */
+body[data-embed] #scorebug,
+body[data-embed] #transport,
+body[data-embed] #lightpool,
+body[data-embed] #grain,
+body[data-embed] #status { display: none !important; }
+body[data-embed] #board { top: 0; height: 100%; }
+
+</style>
+</head>
+<body>
+<div id="viewport">
+<div id="stage">
+  <canvas id="board"></canvas>
+  <div id="lightpool"></div>
+  <div id="grain" class="amb"></div>
+
+  <!-- Pre-load curtain: the bot locker room. The six art frames (srcs set by
+       buildLockerRoom — the path prefix is delivery-mode dependent) play as a
+       ~4fps idle loop; the whole scene fades out on the first ingested
+       frame (dismissLockerRoom). role=status so screen readers hear one
+       "Loading replay" while the visual squad preps their markers. -->
+  <div id="lockerroom" role="status" aria-label="Loading replay">
+    <div class="lk-art" id="lk-art" aria-hidden="true">
+      <img class="lk-bg" id="lk-bg" alt="">
+      <div class="lk-sprites" id="lk-sprites"></div>
+    </div>
+    <div class="lk-glow" aria-hidden="true"></div>
+    <div class="lk-cap" id="lk-cap" aria-hidden="true">Waiting for first light&hellip;</div>
+    <div class="lk-bar" aria-hidden="true"><i></i></div>
+    <div class="lk-sub">Cog depot &middot; Loading replay</div>
+  </div>
+
+  <div id="chrome">
+    <!-- Plates are generated per active team (2-4) by ensureScorebug(): one
+         per side for classic red/blue, two stacked per side for 3-4 teams.
+         Each plate holds a flag icon, one inline NAME · Lives · count row
+         (mirrored on the right so names flank the clock), and the squad pip
+         strip (one pip per player: alive / down / eliminated; clickable →
+         POV lens). -->
+    <div id="scorebug">
+      <div class="plates" id="plates-l"></div>
+
+      <div class="clock-col">
+        <div class="clock amb" id="clock">
+          <div class="time" id="clock-time">0:00</div>
+          <span class="ffwd-mini" id="ffwd-mini">▸▸</span>
+          <div class="caption" id="clock-caption">Dawn of the first day</div>
+        </div>
+      </div>
+
+      <div class="plates" id="plates-r"></div>
+    </div>
+
+
+    <div id="mmwarn">Replay hash mismatch — showing recorded directives</div>
+    <!-- First-person picture-in-picture: the selected seat's Wolfenstein-style
+         raycast view, shown only while a player is in POV. A window into what
+         that soldier sees down the barrel, riding alongside their top-down fog.
+         Its own inset tactical map (bottom-left) shows the seat's position and
+         vision cone against the WHOLE un-fogged arena, so the viewer always
+         knows where the EYES are looking and standing. -->
+    <div id="bannerlane"></div>
+    <div id="killfeed"></div>
+
+    <div id="transport">
+      <!-- Buttons on top, scrubber/timeline below (the transport sits in its own
+           reserved band under the board, so nothing here overlaps play). -->
+      <div class="tbar">
+        <button class="tbtn" id="btn-restart" title="Restart (,)">⟲</button>
+        <button class="tbtn" id="btn-back" title="Back one tick (b)">◂|</button>
+        <button class="tbtn" id="btn-play" title="Play / pause (space)">▶</button>
+        <button class="tbtn" id="btn-fwd" title="Skip +5s (.)">+5s</button>
+        <button class="tbtn" id="btn-end" title="Jump to end (e)">|▸</button>
+        <button class="tbtn" id="btn-loop" title="Loop (r)">↻</button>
+        <button class="tbtn" id="btn-skip" title="Auto-skip lulls (f)">▸▸</button>
+        <button class="tbtn" id="btn-spoilers" title="Spoilers: nightfalls / cities lost / winner on the timeline ahead of the playhead (o)">spoilers</button>
+        <span class="ffwd-chip" id="ffwd-chip">▸▸ SKIPPING LULL</span>
+        <span class="win-chip" id="win-chip"></span>
+        <span class="tick-clock" id="tick-clock">0 / 0</span>
+        <span class="tsep"></span>
+        <div class="speedchips" id="speedchips"></div>
+      </div>
+      <div class="scrub" id="scrub">
+        <!-- momentum graph sits UNDERNEATH the seek track, on the SAME tick/mx
+             axis, so the playhead crosses it 1:1 with the timeline -->
+        <svg class="momentum" id="momentum" viewBox="0 0 1000 100"
+             preserveAspectRatio="none" aria-hidden="true"></svg>
+        <span class="momentum-label">CITY TILES</span>
+        <div class="scrub-track"></div>
+        <div class="scrub-fill" id="scrub-fill"></div>
+        <!-- lull shading rides ABOVE track+fill so the quiet stretches read
+             dimmed whether played or not; the amber head still wins (z:3) -->
+        <div id="lulls"></div>
+        <div class="scrub-win" id="scrub-win"></div>
+        <div class="scrub-head" id="scrub-head"></div>
+      </div>
+    </div>
+
+    <div id="endcard">
+      <div class="headline" id="ec-headline">—</div>
+      <div class="wincond" id="ec-wincond"></div>
+      <div class="how" id="ec-how"></div>
+      <!-- One stats panel per active team, generated by ensureEndcardTeams(). -->
+      <div class="ec-teams" id="ec-teams"></div>
+      <div class="ec-replay" id="ec-replay"></div>
+    </div>
+  </div>
+
+  <div id="status">connecting</div>
+</div>
+</div>
+
+<!-- WIRE_CONSTANTS -->
+<!-- CHROME_COMMON -->
+<!-- BROADCAST_CORE -->
+
+<script>
+(function () {
+  'use strict';
+
+  // Shared replay chrome (chrome_common.js, spliced over the CHROME_COMMON
+  // marker by the server / dist bundle; the literal marker must not appear
+  // inside this script or the splice would corrupt it). A raw file:// open of
+  // this source has no splice — same non-functional baseline as the missing
+  // BROADCAST_CORE — so fail loud and early instead of throwing mid-file.
+  if (!window.ChromeCommon) {
+    console.error('replay_broadcast: chrome_common.js missing — this page must be served spliced (native server or dist bundle), not opened raw.');
+    return;
+  }
+  var C = window.ChromeCommon({
+    send: function (cmd) { send(cmd); },
+    sendPov: function (slot) { send('v:' + slot); },
+    getState: function () { return lastState; }
+  });
+  // Aliases so the per-view code below reads exactly as before.
+  var RED = C.RED, BLUE = C.BLUE, AMBER = C.AMBER, PAPER = C.PAPER;
+  var GREEN = C.GREEN, YELLOW = C.YELLOW;
+  var TEAM_ORDER = C.TEAM_ORDER, TEAM_COLOR = C.TEAM_COLOR;
+  var teamCol = C.teamCol, activeTeams = C.activeTeams, teamOf = C.teamOf;
+  var otherTeam = C.otherTeam, stripSeatSuffix = C.stripSeatSuffix;
+  var teamPolicies = C.teamPolicies, teamName = C.teamName, teamHeadline = C.teamHeadline;
+  var rosterName = C.rosterName, setName = C.setName, esc = C.esc, fmt = C.fmt;
+  var setHandicap = C.setHandicap;
+  var teamPerkGroups = C.teamPerkGroups, perkIconsHtml = C.perkIconsHtml;
+  var togglePov = C.togglePov, renderClock = C.renderClock, renderTransport = C.renderTransport;
+  var ingestLullSpans = C.ingestLullSpans, renderLullSpans = C.renderLullSpans;
+  var markBeat = C.markBeat, killMarkerTeam = C.killMarkerTeam, renderBeatMarkers = C.renderBeatMarkers;
+  var captureTeam = C.captureTeam, ingestBeats = C.ingestBeats, setVerdict = C.setVerdict;
+  var ingestLeadSeries = C.ingestLeadSeries, recordMomentum = C.recordMomentum;
+  var renderMomentum = C.renderMomentum;
+  var getSpoilers = C.getSpoilers, setSpoilers = C.setSpoilers;
+
+  var WIRE = C.WIRE, SPEEDS = C.SPEEDS, FPS = C.FPS;
+
+  // Two independent tempo levers (§11, L20):
+  //  (1) ANIM_MAX_FACTOR — chrome beat animations never play faster than this
+  //      no matter the replay speed, so feed rows / flips / banners keep their
+  //      read time at 8-16×. Applied as an animationFactor cap on durations.
+  //  (2) DWELL_FLOOR_MS — a beat's on-screen hold has a wall-clock minimum
+  //      (feed row / banner / curtain), collapsing only the dead time between
+  //      contacts. These are NOT one speed knob — one caps motion, one floors dwell.
+  var ANIM_MAX_FACTOR = 2;
+  var DWELL_FLOOR_MS = { feed: 2600, banner: 1900, curtain: 2400, read: 600 };
+  function animFactor() {
+    // Lever 1 — the chrome plays at min(replaySpeed, cap): at 16× the board flies
+    // but a kill row still slides in at 2×-equivalent so a human can read it.
+    var sp = (lastState && lastState.sp) || 1;
+    return Math.min(sp, ANIM_MAX_FACTOR);
+  }
+  function dwellFloor(kind) {
+    // Lever 2 — a beat's on-screen hold has a wall-clock minimum regardless of
+    // replay speed; speed collapses only the dead time between contacts, never
+    // the read time of a beat itself. Independent of the animFactor cap.
+    return DWELL_FLOOR_MS[kind] || DWELL_FLOOR_MS.read;
+  }
+  // Beat-pause (§11): freeze chrome ambient the instant a beat lands so idle
+  // life never competes with a kill/steal/capture. Held for the READ_PAUSE floor
+  // (≥600ms wall-clock), then released. The board's own 24Hz is never touched.
+  var beatPulseTimer = null;
+  function beatPulse() {
+    stage.classList.add('beat-active');
+    if (beatPulseTimer) clearTimeout(beatPulseTimer);
+    beatPulseTimer = setTimeout(function () {
+      stage.classList.remove('beat-active');
+      beatPulseTimer = null;
+    }, dwellFloor('read'));
+  }
+
+  var $ = C.$;
+  var viewport = $('viewport');
+  var stage = $('stage');
+  var canvas = $('board');
+  var statusEl = $('status');
+
+  // ---- pre-load curtain: the bot locker room -------------------------------
+  // The stage opens on this scene (see #lockerroom CSS) while the socket /
+  // wasm sim boots. The art frames are wired here (their base path is
+  // delivery-mode dependent, like the cog art); the first ingested frame
+  // calls dismissLockerRoom(), which fades the room out after a short
+  // minimum dwell (a sub-second load would otherwise flash the scene like
+  // a glitch).
+  var lockerEl = $('lockerroom');
+  var LOCKER_MIN_DWELL_MS = 900;
+  var lockerShownAt = Date.now();
+  var lockerCapTimer = null, lockerGone = false;
+  (function buildLockerRoom() {
+    // Scene art (nanobanana generations, like the shell's dungeon walls):
+    // bg.jpg is the empty-room plate; each bot is five freestanding alpha
+    // sprites (<bot>_<pose>.webp) cut from the generated pose frames. Same
+    // three-delivery-modes path story as the cog art, so the base derives
+    // from COG_BASE: native "<prefix>/client" + "/art/lockerroom", static
+    // bundle "./art/lockerroom".
+    var artBase = COG_BASE + '/art/lockerroom';
+    $('lk-bg').src = artBase + '/bg.jpg';
+
+    // Sprite geometry baked by the extraction script (scripts prompt in the
+    // PR): ax/ay anchor each bot's bottom-center on the plate, w/h size each
+    // pose — all in % of the 992x926 plate, so everything scales together.
+    // Distinct cycle lengths keep the four carousels out of phase; the
+    // composed scene state repeats only every few minutes.
+    var LK_BOTS = {
+      green:  { ax: 22.83, ay: 76.67, cyc: 4.6,
+        poses: [{ f: 1, w: 14.82, h: 18.03 }, { f: 2, w: 14.92, h: 18.25 },
+                { f: 3, w: 14.62, h: 18.14 }, { f: 5, w: 14.82, h: 18.25 },
+                { f: 6, w: 14.62, h: 19.01 }] },
+      blue:   { ax: 41.08, ay: 76.67, cyc: 3.8,
+        poses: [{ f: 1, w: 16.63, h: 18.25 }, { f: 2, w: 14.92, h: 21.6 },
+                { f: 3, w: 15.83, h: 21.81 }, { f: 5, w: 16.63, h: 20.63 },
+                { f: 6, w: 14.62, h: 22.68 }] },
+      yellow: { ax: 59.93, ay: 76.78, cyc: 5.2,
+        poses: [{ f: 1, w: 16.43, h: 18.57 }, { f: 2, w: 15.52, h: 18.57 },
+                { f: 3, w: 15.62, h: 18.57 }, { f: 5, w: 16.13, h: 18.36 },
+                { f: 6, w: 15.83, h: 23.11 }] },
+      red:    { ax: 79.03, ay: 77.43, cyc: 4.1,
+        poses: [{ f: 1, w: 18.15, h: 18.79 }, { f: 2, w: 15.93, h: 20.19 },
+                { f: 3, w: 15.52, h: 19.87 }, { f: 5, w: 15.83, h: 20.63 },
+                { f: 6, w: 16.73, h: 21.06 }] }
+    };
+    var spritesEl = $('lk-sprites');
+    ['green', 'blue', 'yellow', 'red'].forEach(function (bot) {
+      var b = LK_BOTS[bot];
+      var maxW = 0, maxH = 0;
+      b.poses.forEach(function (p) {
+        maxW = Math.max(maxW, p.w);
+        maxH = Math.max(maxH, p.h);
+      });
+      var wrap = document.createElement('div');
+      wrap.className = 'lk-boto';
+      wrap.style.left = (b.ax - maxW / 2) + '%';
+      wrap.style.top = (b.ay - maxH) + '%';
+      wrap.style.width = maxW + '%';
+      wrap.style.height = maxH + '%';
+      b.poses.forEach(function (p, ix) {
+        var img = document.createElement('img');
+        img.alt = '';
+        img.src = artBase + '/' + bot + '_' + p.f + '.webp';
+        // widths are % of the plate; inside the wrapper they rescale by maxW
+        img.style.width = (p.w / maxW * 100) + '%';
+        img.style.setProperty('--cyc', b.cyc + 's');
+        img.style.animationDelay = (ix * b.cyc / b.poses.length) + 's';
+        wrap.appendChild(img);
+      });
+      spritesEl.appendChild(wrap);
+    });
+
+    // Pin the sprite plane to the bg image's on-screen box (the img is the
+    // flex-fitted sizer; % geometry above resolves against this plane).
+    var bgImg = $('lk-bg');
+    function fitLockerSprites() {
+      spritesEl.style.left = bgImg.offsetLeft + 'px';
+      spritesEl.style.top = bgImg.offsetTop + 'px';
+      spritesEl.style.width = bgImg.offsetWidth + 'px';
+      spritesEl.style.height = bgImg.offsetHeight + 'px';
+    }
+    bgImg.addEventListener('load', fitLockerSprites);
+    if (window.ResizeObserver) new ResizeObserver(fitLockerSprites).observe(bgImg);
+    window.addEventListener('resize', fitLockerSprites);
+    fitLockerSprites();
+
+    // rotating prep-talk line under the scene
+    var lines = [
+      'Sharpening the axes…',
+      'Counting the wood on the near belt…',
+      'Checking the night bill, tile by tile…',
+      'Greasing the cart wheels…',
+      'Squats. Even robots warm up…',
+      'Reading the research board…',
+      'Chalking the island grid…',
+      'Waiting for the sun…'
+    ];
+    var capEl = $('lk-cap'), capIx = 0;
+    lockerCapTimer = setInterval(function () {
+      capEl.classList.add('swap');
+      setTimeout(function () {
+        capIx = (capIx + 1) % lines.length;
+        capEl.textContent = lines[capIx];
+        capEl.classList.remove('swap');
+      }, 180);
+    }, 2600);
+  })();
+  function dismissLockerRoom() {
+    if (lockerGone) return;
+    lockerGone = true;
+    var wait = Math.max(0, LOCKER_MIN_DWELL_MS - (Date.now() - lockerShownAt));
+    setTimeout(function () {
+      lockerEl.classList.add('gone');
+      setTimeout(function () {
+        lockerEl.style.display = 'none';
+        if (lockerCapTimer) { clearInterval(lockerCapTimer); lockerCapTimer = null; }
+      }, 650);
+    }, wait);
+  }
+
+  // ---- embed mode (League Replayer) ----------------------------------------
+  // When loaded inside the League Replayer shell (?embed=1), this client renders
+  // ONLY the board (its own scorebug/transport/feed chrome is hidden by CSS via
+  // body[data-embed]) and streams each parsed state frame up to the parent shell
+  // over postMessage. The shell owns the walls + scorebug + KDA + standings and
+  // draws them from this stream, so there is ONE websocket / ONE transport /
+  // perfect tick-sync between the embedded game and the wall HUD.
+  var EMBED = false;
+  try { EMBED = new URLSearchParams(location.search).get('embed') === '1'; } catch (e) {}
+  if (EMBED) document.body.setAttribute('data-embed', '1');
+
+  // Tick deep-link (?t=<tick>): seek there on load, paused, via the same s:
+  // command the scrubber uses (the sim clamps out-of-range ticks). One-shot,
+  // fired on the first ingested frame so the replay runtime is ready.
+  var SEEK_T = null;
+  try {
+    var seekRaw = new URLSearchParams(location.search).get('t');
+    if (seekRaw != null && /^\d+$/.test(seekRaw)) SEEK_T = parseInt(seekRaw, 10);
+  } catch (e) {}
+
+  // Achievement deep-link (?achievement=<id>): a badge's watch link. The lead
+  // chrome frame carries the final game's earned badges with their focus cogs
+  // (s.ach: [{id, s, n}]); when it arrives, select the receiving cog's POV via
+  // the same v: command a squad-pip click sends. One-shot: once applied (or the
+  // id turns out unearned in this recording) the param goes inert, so the
+  // viewer is free to click elsewhere.
+  var ACH_FOCUS = null;
+  try {
+    var achRaw = new URLSearchParams(location.search).get('achievement');
+    if (achRaw) ACH_FOCUS = achRaw;
+  } catch (e) {}
+  function applyAchievementFocus(s) {
+    if (ACH_FOCUS == null || !s.ach) return;
+    var want = ACH_FOCUS;
+    ACH_FOCUS = null;             // the lead frame ships once; so does this
+    for (var i = 0; i < s.ach.length; i++) {
+      if (s.ach[i].id === want && s.ach[i].s != null && s.ach[i].s >= 0) {
+        send('v:' + s.ach[i].s);
+        return;
+      }
+    }
+  }
+  function postToShell(type, payload) {
+    if (!EMBED || window.parent === window) return;
+    try { window.parent.postMessage({ src: 'ctf-replay', type: type, data: payload }, '*'); } catch (e) {}
+  }
+
+  // The whole replay is ONE fixed-aspect composition locked to the board's
+  // native size. The stage is sized to this aspect inside the embed box and
+  // every overlay scales with it, so the chrome can never drift off the
+  // graphics regardless of the Observatory container's shape
+  // (§2 real-container-target, L82 bounded-embed).
+  //
+  // These are PRE-STREAM DEFAULTS ONLY (the classic arena's 1235×659). The game
+  // serves many map shapes — a four-team board is SQUARE (2496² / 4992²) — so
+  // the real native size arrives on every frame and syncBoardAspect re-layouts
+  // the stage when it differs. Leaving them hard-coded pillarboxes a square
+  // board inside a 1.874:1 stage with dead bands either side.
+  var BOARD_W = 1235, BOARD_H = 659;
+  var BOARD_ASPECT = BOARD_W / BOARD_H;
+  function syncBoardAspect(s) {
+    if (!s || !(s.boardW > 1) || !(s.boardH > 1)) return;
+    var aspect = s.boardW / s.boardH;
+    if (Math.abs(aspect - BOARD_ASPECT) < 0.001) return;
+    BOARD_W = s.boardW; BOARD_H = s.boardH; BOARD_ASPECT = aspect;
+    relayout();
+  }
+
+  // ---- core (board renderer + WS) ----
+  var lastState = null;
+  // PAINTBALL mode: latched on the first frame that carries a squad-game
+  // field (`regime` only rides squad frames). Classic frames never set it.
+  var LUX_CTX = null;            // filled at the end of this IIFE (hoisted)
+  // A scrubber click that arrives before the first chrome frame used to be
+  // DROPPED: click-to-seek needs [startTick, maxTick] off the frame to map the
+  // x-fraction onto a tick, and the handler simply returned when there was no
+  // frame yet. The fraction is remembered instead and resolved on the first
+  // frame that carries the axis — the same one-shot shape as ?t=.
+  var SEEK_FRAC = null;
+  var replayAdapter = window.LuxStaticReplay || null;
+  var coreConfig = {
+    canvas: canvas,
+    onText: function (txt) { onFrame(txt); },
+    onStatus: function (st) { onStatus(st); },
+    onFirstFrame: function () { core.setViewportFit(); },
+    // The core owns the view, so it tells the controls where it ended up —
+    // never the other way round. That keeps the slider honest when the zoom
+    // moved for some other reason (a pinch, an arrow key, a refit, a new board).
+    onTransform: function (t) { void t; }
+  };
+  var core = replayAdapter
+    ? replayAdapter.createCore(coreConfig)
+    : window.BroadcastCore.create(coreConfig);
+
+  // Tell the League Replayer shell the board is alive and showing its
+  // locker-room curtain, so the shell can drop its own "loading replay…"
+  // toast (which would float mid-scene) and give a slow wasm boot a longer
+  // leash before escalating to the load-failure card.
+  postToShell('boot');
+
+  function send(cmd) { core.sendCommand(cmd); }
+
+  // Transport commands relayed DOWN from the League Replayer shell (embed mode):
+  // the shell's wall-mounted transport buttons/scrubber postMessage a command
+  // string, which we forward to the single shared replay websocket. Same command
+  // vocabulary the local transport uses, so the shell drives playback 1:1.
+  if (EMBED) {
+    window.addEventListener('message', function (ev) {
+      var m = ev.data;
+      if (!m || m.src !== 'ctf-shell') return;
+      if (m.type === 'cmd' && typeof m.cmd === 'string') send(m.cmd);
+      else if (m.type === 'seek' && m.tick != null) send('s:' + m.tick);
+      else if (m.type === 'pov' && m.slot != null) send('v:' + m.slot);
+    });
+  }
+
+  function onStatus(st) {
+    statusEl.textContent = st;
+    statusEl.classList.toggle('show', st !== 'open');
+  }
+
+  // ============================================================
+  //  Frame ingest
+  // ============================================================
+  var lastTick = -1;
+  var lastFf = false;   // previous frame's fast-forward flag (jump detection)
+  // (beat markers, lull spans, beats timeline and momentum state live in the
+  // shared chrome closure — see chrome_common.js)
+
+  function onFrame(txt) {
+    var s;
+    try { s = JSON.parse(txt); } catch (e) { return; }
+    lastState = s;
+    dismissLockerRoom();  // the board is live — fade the pre-load curtain
+
+    if (SEEK_T != null) { send('s:' + SEEK_T); SEEK_T = null; }
+    if (SEEK_FRAC != null && s.en) { seekToFraction(s, SEEK_FRAC); SEEK_FRAC = null; }
+    applyAchievementFocus(s);
+
+    // The board's real native size, read off the core's letterbox transform.
+    // THIS page re-layouts its own stage to it (syncBoardAspect) and it also
+    // rides along to the League Replayer shell (embed mode), which reads
+    // roster/KDA, clock, lives, flags and pov straight off this frame to paint
+    // the wall-mounted scorebug + KDA tables in lockstep with the board — and
+    // tracks the same aspect with its own syncBoardAspect.
+    if (core) {
+      var bt = core.getTransform();
+      if (bt.nativeW > 1 && bt.nativeH > 1) { s.boardW = bt.nativeW; s.boardH = bt.nativeH; }
+    }
+    syncBoardAspect(s);
+    postToShell('frame', s);
+
+    // Detect a jump (seek/loop): clear transient beats so nothing phantoms.
+    // A skip-lulls fast-forward frame legitimately advances up to 64 ticks
+    // (this frame or the previous one, which may have crossed OUT of the
+    // lull), so widen the expected stride accordingly instead of misreading
+    // the boost as a seek.
+    var stride = (s.ff || lastFf) ? Math.min((s.sp || 1) * 8, 64) : (s.sp || 1);
+    var jumped = (s.t < lastTick) || (lastTick >= 0 && s.t - lastTick > stride * 4 + 2);
+    if (jumped) { clearFeed(); clearBanners(); }
+    lastFf = !!s.ff;
+
+    renderClock(s);
+    renderTransport(s);
+    renderMismatch(s);
+
+    if (s.events && s.events.length && !jumped) {
+      for (var i = 0; i < s.events.length; i++) {
+        if (window.LuxChrome) window.LuxChrome.event(s.events[i], s, LUX_CTX);
+      }
+    }
+    // Even on a jump, register beat markers we can place from state? Markers
+    // come from events only; on a jump the tracker resync'd (no events), so we
+    // keep whatever markers we already collected.
+    ingestLeadSeries(s);
+    ingestLullSpans(s);
+    ingestBeats(s);
+    recordMomentum(s);
+
+    if (s.ph === 'gameover') {
+      if (window.LuxChrome) window.LuxChrome.endcard(s, LUX_CTX);
+      if (s.over) setVerdict(s.over);
+    } else { $('endcard').classList.remove('on'); }
+
+    // LUX-AI additions run last, over the inherited chrome's own render.
+    if (window.LuxChrome) window.LuxChrome.frame(s, LUX_CTX, jumped);
+
+    lastTick = s.t;
+  }
+
+  // (ingestLeadSeries / ingestLullSpans / ingestBeats / setVerdict live in the
+  // shared chrome — chrome_common.js)
+
+  // The server ships the static minimap wall silhouette ONCE (RLE of a coarse
+  // floor/stone/glass grid). Decode it into an offscreen canvas keyed to the
+  // arena, so the tactical map blits terrain in one drawImage per frame instead
+  // of re-rasterizing the grid. Cached for the whole match.
+  function renderMismatch(s) {
+    $('mmwarn').classList.toggle('on', s.mm >= 0);
+  }
+
+  // ============================================================
+  //  Beats → surfaces  (§5)
+  // ============================================================
+  // ---------- kill feed queue (fixed reserve, dwell floor) ----------
+  var feedEl = $('killfeed');
+  var MAX_FEED = 4;
+  function pushFeed(row) {
+    feedEl.insertBefore(row, feedEl.firstChild);
+    while (feedEl.children.length > MAX_FEED) feedEl.removeChild(feedEl.lastChild);
+    // Dwell floor (lever 2): a wall-clock minimum so the row reads even at 16×.
+    var hold = dwellFloor('feed');
+    // animFactor cap (lever 1): the slide-in duration never dips below its
+    // read-time, so the row still overshoots-and-settles legibly at high speed.
+    row.style.animationDuration = (250 / animFactor()) + 'ms';
+    setTimeout(function () {
+      if (row.parentNode) { row.classList.add('leaving'); setTimeout(function () { if (row.parentNode) row.parentNode.removeChild(row); }, 300); }
+    }, hold);
+  }
+  function clearFeed() { feedEl.innerHTML = ''; }
+
+  // ---------- banner lane queue (one at a time, min hold) ----------
+  var bannerEl = $('bannerlane');
+  var bannerQueue = [];
+  var bannerBusy = false;
+  function banner(text, cls) {
+    bannerQueue.push({ text: text, cls: cls });
+    pumpBanner();
+  }
+  function pumpBanner() {
+    if (bannerBusy || !bannerQueue.length) return;
+    bannerBusy = true;
+    var b = bannerQueue.shift();
+    var chip = document.createElement('div');
+    chip.className = 'banner-chip ' + b.cls;
+    chip.textContent = b.text;
+    bannerEl.appendChild(chip);
+    // lever 1 (animFactor cap): the pop-in never plays faster than 2x, so a
+    // fast-forward scrub can't reduce a banner to a subliminal flash.
+    chip.style.animationDuration = (300 / animFactor()) + 'ms';
+    var hold = dwellFloor('banner'); // lever 2: wall-clock dwell floor (~1.9s)
+    setTimeout(function () {
+      chip.classList.add('leaving');
+      setTimeout(function () {
+        if (chip.parentNode) chip.parentNode.removeChild(chip);
+        bannerBusy = false;
+        pumpBanner();
+      }, 260);
+    }, hold);
+  }
+  function clearBanners() {
+    bannerQueue = [];
+    bannerEl.innerHTML = '';
+    bannerBusy = false;
+  }
+
+  // (scrubber beat markers — markBeat / killMarkerTeam / renderBeatMarkers —
+  // live in the shared chrome — chrome_common.js)
+
+  // (momentum graph — recordMomentum / renderMomentum and their state —
+  // lives in the shared chrome — chrome_common.js)
+
+  // ============================================================
+  //  End-card (§5/§8) — the END SEGMENT: verdict, win condition and match
+  //  stats, held on screen by the server for ~10s before a looping restart.
+  //  Reads isDraw BEFORE winner (F4); names the key (F3).
+  // ============================================================
+  // ============================================================
+  function togglePlay() { send(' '); }
+  // (speed chips + their speed→command map live in the shared chrome)
+  $('btn-play').addEventListener('click', togglePlay);
+  $('btn-restart').addEventListener('click', function () { send(','); });
+  $('btn-back').addEventListener('click', function () { send('b'); });
+  $('btn-fwd').addEventListener('click', function () { send('.'); });
+  $('btn-end').addEventListener('click', function () { send('e'); });
+  $('btn-loop').addEventListener('click', function () { send('r'); });
+  $('btn-skip').addEventListener('click', function () { send('f'); });
+
+  // click-to-seek: map x-fraction to a tick and send s:<tick>
+  // Map an x-fraction of the scrubber onto the shown [startTick, maxTick] axis
+  // and seek there. One place, shared by a live click and by a click that had
+  // to wait for the first frame.
+  function seekToFraction(s, frac) {
+    var st = Math.max(0, s.st || 0);
+    var mx = Math.max(st + 1, s.mx || 1);
+    send('s:' + (st + Math.round(frac * (mx - st))));
+  }
+
+  $('scrub').addEventListener('click', function (ev) {
+    var rect = this.getBoundingClientRect();
+    var frac = Math.min(1, Math.max(0, (ev.clientX - rect.left) / rect.width));
+    // The axis lives on the frame, so a click before the first frame cannot be
+    // mapped yet — QUEUE it (onFrame flushes SEEK_FRAC) rather than dropping
+    // it. A dropped first click is invisible: the board is already drawn, the
+    // transport looks alive, and the viewer just does not move.
+    if (!lastState || !lastState.en) { SEEK_FRAC = frac; return; }
+    seekToFraction(lastState, frac);
+  });
+
+
+  // keyboard shortcuts mirror the transport
+  window.addEventListener('keydown', function (ev) {
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    var k = ev.key;
+    if (k === ' ') { ev.preventDefault(); togglePlay(); }
+    else if (k === ',' || k === '<') send(',');
+    else if (k === '.' || k === '>') send('.');
+    else if (k === 'b') send('b');
+    else if (k === 'e') send('e');
+    else if (k === 'r') send('r');
+    else if (k === 'f') send('f');
+    else if (k === '+' || k === '=') send('+');
+    else if (k === '-' || k === '_') send('-');
+    else if (k === 'o') setSpoilers(!getSpoilers());
+    else if (k >= '1' && k <= '9') send(k);
+    // keydown never crosses the iframe boundary: relay Esc to the league
+    // shell, which relays it on to the Observatory theater host.
+    else if (k === 'Escape') postToShell('esc');
+  });
+
+  // Click a soldier on the board to select it (mirrors the squad-pip lens, but
+  // for anyone visible on the arena). The board canvas draws ONLY the zoomable
+  // map layer, letterboxed by broadcast_core; chrome (scoreboard, transport) are
+  // HTML overlays, so a canvas click is always a MAP-space click. Invert the
+  // core's letterbox transform to recover native map pixels, then hand them to
+  // clickMap — the server hit-tests the soldier footprint and toggles selection.
+  function relayout() {
+    var boxW = viewport.clientWidth, boxH = viewport.clientHeight;
+    if (!boxW || !boxH) return;
+    // The board region (game action) fits the board aspect into the box BETWEEN a
+    // reserved top band (the scorebug) and bottom band (the transport), so neither
+    // ever sits over play. Each band's pixel height depends on --hudscale (→ board
+    // width) and the board fit depends on the bands, so iterate to a FIXED POINT:
+    // stop as soon as a pass measures the same bands it was laid out with. Two
+    // passes settle a container resize, but a MAP-ASPECT change (the 1.874:1
+    // arena → a square four-team board) swings --hudscale far enough that the
+    // second pass is still reserving the old bands, which would leave the board
+    // a couple of percent off its true aspect — visible as thin dead strips.
+    var scorebug = document.getElementById('scorebug');
+    var transport = document.getElementById('transport');
+    var root = document.documentElement;
+    var topBand = parseFloat(getComputedStyle(root).getPropertyValue('--topband')) || 0;
+    var band = parseFloat(getComputedStyle(root).getPropertyValue('--band')) || 0;
+    var stageW = 0, stageH = 0;
+    for (var pass = 0; pass < 4; pass++) {
+      var prevTop = topBand, prevBand = band;
+      var availH = Math.max(1, boxH - topBand - band);
+      var boardW, boardH;
+      if (boxW / availH > BOARD_ASPECT) {
+        boardH = availH; boardW = Math.round(availH * BOARD_ASPECT);
+      } else {
+        boardW = boxW; boardH = Math.round(boxW / BOARD_ASPECT);
+      }
+      stageW = boardW; stageH = boardH + topBand + band;
+      stage.style.width = stageW + 'px';
+      stage.style.height = stageH + 'px';
+      // One scale for the whole composition: chrome was authored against a
+      // ~760px-wide reference board, so --hudscale is the board's on-screen width
+      // over that reference (clamped so a huge featured embed doesn't bloat the
+      // chrome and a tiny 360px floor stays legible).
+      var scale = Math.max(0.5, Math.min(1.6, boardW / 760));
+      root.style.setProperty('--hudscale', scale.toFixed(3));
+      stage.classList.toggle('tiny', boardW <= 620);
+      // Measure each band's natural height → reserve exactly that.
+      topBand = scorebug ? scorebug.offsetHeight : 0;
+      band = transport ? transport.offsetHeight : 0;
+      root.style.setProperty('--topband', topBand + 'px');
+      root.style.setProperty('--band', band + 'px');
+      if (Math.abs(topBand - prevTop) < 0.5 && Math.abs(band - prevBand) < 0.5) break;
+    }
+    core.setViewportFit();
+  }
+  var ro = new ResizeObserver(relayout);
+  ro.observe(viewport);
+  window.addEventListener('resize', relayout);
+
+  // The context the appended PAINTBALL block reads the classic chrome
+  // through. Declared here (hoisted `var`, so onFrame sees it however early
+  // the first frame lands) rather than duplicating any of it: the game block
+  // must not re-implement naming, escaping, feed insertion or the transport.
+  LUX_CTX = {
+    $: $, C: C, esc: esc, fmt: fmt, send: send,
+    teamCol: teamCol, activeTeams: activeTeams, teamOf: teamOf,
+    teamName: teamName, rosterName: rosterName,
+    pushFeed: pushFeed, banner: banner, clearFeed: clearFeed,
+    seekToFraction: seekToFraction, setVerdict: setVerdict,
+    getState: function () { return lastState; }
+  };
+  if (window.LuxChrome) window.LuxChrome.install(LUX_CTX);
+
+  relayout();
+  core.start();
+})();
+</script>
+<!-- ============================================================
+     LUX-AI additions to the inherited coworld-ctf chrome
+     ============================================================
+     Everything above this banner is the starter's broadcast page. It was
+     edited in exactly two ways, both of them DELETIONS the design note names:
+     the `#viewpanel` cluster (zoom bar + minimap — the board is a fixed 16x16
+     grid with no off-frame area and `relayout()` fits it whole at every width
+     including 360px, so per the pin a fixed arena drops it entirely), and
+     `#fpv*` / `#povBadge` with the ctf scorebug internals, endcard columns and
+     flag/lives/kill machinery that fed them. `scripts/fork_broadcast_page.py`
+     performs those deletions from the starter mount, so the fork is
+     reproducible and reviewable.
+
+     Nothing here touches the transport band. `relayout()` still owns
+     --hudscale, --topband and --band on :root; the endcard still stops at
+     bottom: var(--band, 0px) and is still dismissed by every seek; and every
+     scrubber beat this block draws is a LABELLED, CLICKABLE BUTTON that seeks
+     on click, styled for EVERY kind the sim emits and no others — dusk,
+     research, citylost, end. The builder carries a `lux` prefix precisely so
+     it can never be shadowed by the chrome alias block's hoisted
+     `var markBeat` (the cogame-tandem 2026-08-23 hoisting trap).
+     ============================================================ -->
+<style>
+/* --- scorebug plates ---------------------------------------------------- */
+/* The plate name must survive a 360px featured-match iframe: it grows into
+   whatever room the plate has and ellipsises only when it genuinely runs out,
+   never collapsing to a bare "…". */
+.plate-name {
+  flex: 1 1 auto;
+  min-width: 3.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.plate .tiles-num {
+  font-family: var(--pixfont);
+  font-size: calc(26 * var(--u));
+  line-height: 1;
+  color: var(--tc, var(--paper));
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+.plate .tiles-label {
+  font-family: var(--finefont);
+  font-size: calc(8 * var(--u));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  white-space: nowrap;
+}
+.plate .lux-sub {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  margin-top: calc(2 * var(--u));
+  font-family: var(--finefont);
+  font-size: calc(8.5 * var(--u));
+  color: var(--paper-dim);
+  white-space: nowrap;
+}
+.plate.side-r .lux-sub { flex-direction: row-reverse; }
+.plate .lux-alias {
+  font-family: var(--finefont);
+  font-size: calc(7.5 * var(--u));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+}
+.plate .lux-fallback { color: var(--amber); font-family: var(--pixfont); }
+.plate .lux-chip {
+  width: calc(9 * var(--u));
+  height: calc(9 * var(--u));
+  background: var(--tc, var(--paper));
+  flex: none;
+}
+
+/* --- the cycle bar: nine cycles, each 30 light + 10 dark ---------------- */
+#cyclebar {
+  display: flex;
+  gap: calc(2 * var(--u));
+  align-items: stretch;
+  height: calc(9 * var(--u));
+  margin-top: calc(3 * var(--u));
+}
+#cyclebar .cyc {
+  flex: 1 1 0;
+  display: flex;
+  position: relative;
+  background: rgba(12, 9, 6, 0.5);
+}
+#cyclebar .cyc .day { flex: 3 1 0; background: rgba(232, 163, 61, 0.42); }
+#cyclebar .cyc .nite { flex: 1 1 0; background: rgba(40, 58, 96, 0.85); }
+#cyclebar .cyc .num {
+  position: absolute;
+  inset: 0;
+  font-family: var(--finefont);
+  font-size: calc(6.5 * var(--u));
+  color: var(--paper);
+  opacity: 0.7;
+  text-align: center;
+}
+#cyclebar .playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc(2 * var(--u));
+  background: var(--amber);
+}
+
+/* --- the research rail: two bars 0..200 with the 50/200 ticks ----------- */
+#researchrail {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--u));
+  margin-top: calc(3 * var(--u));
+}
+#researchrail .rr {
+  position: relative;
+  height: calc(7 * var(--u));
+  background: rgba(12, 9, 6, 0.55);
+}
+#researchrail .rr i {
+  display: block;
+  height: 100%;
+  background: var(--tc, var(--paper));
+}
+#researchrail .rr .tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc(1 * var(--u));
+  background: rgba(242, 232, 216, 0.55);
+}
+#researchrail .rr.flash { box-shadow: 0 0 0 calc(1.5 * var(--u)) var(--amber); }
+#researchrail .rr-cap {
+  font-family: var(--finefont);
+  font-size: calc(7 * var(--u));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+}
+
+/* --- the fuel strip: one labelled bar per city -------------------------- */
+#fuelstrip {
+  position: absolute;
+  left: calc(8 * var(--u));
+  top: calc(var(--topband) + 8 * var(--u));
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--u));
+  pointer-events: none;
+  z-index: 4;
+}
+#fuelstrip .fs {
+  display: flex;
+  align-items: center;
+  gap: calc(4 * var(--u));
+  font-family: var(--finefont);
+  font-size: calc(7.5 * var(--u));
+  color: var(--paper-dim);
+  background: rgba(12, 9, 6, 0.45);
+  padding: calc(1 * var(--u)) calc(3 * var(--u));
+}
+#fuelstrip .fs .bar {
+  width: calc(48 * var(--u));
+  height: calc(5 * var(--u));
+  background: rgba(12, 9, 6, 0.7);
+}
+#fuelstrip .fs .bar i { display: block; height: 100%; background: var(--tc); }
+#fuelstrip .fs.starving .bar i { background: var(--red); }
+.fl-cap {
+  font-family: var(--finefont);
+  font-size: calc(7 * var(--u));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+}
+
+/* --- scrubber beats: one rule per kind lux-ai emits, and no others ------ */
+/* Buttons, not divs: each carries a title + aria-label and seeks on click. */
+button.beat-marker {
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+  background: var(--paper-dim);
+}
+.beat-marker.dusk {
+  background: rgba(120, 150, 220, 0.9);
+  width: calc(2 * var(--u));
+  height: calc(12 * var(--u));
+}
+.beat-marker.research {
+  background: var(--paper);
+  width: calc(2 * var(--u));
+  height: calc(8 * var(--u));
+}
+.beat-marker.research.red { background: var(--red); }
+.beat-marker.research.blue { background: var(--blue); }
+.beat-marker.citylost { height: calc(10 * var(--u)); width: calc(3 * var(--u)); }
+.beat-marker.citylost.red { background: var(--red); }
+.beat-marker.citylost.blue { background: var(--blue); }
+.beat-marker.end {
+  background: var(--amber);
+  width: calc(3 * var(--u));
+  height: calc(14 * var(--u));
+}
+
+/* --- endcard columns ---------------------------------------------------- */
+#ec-teams .ec-thead,
+#ec-teams .ec-trow {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(4, 1fr);
+  gap: calc(6 * var(--u));
+  font-family: var(--finefont);
+  font-size: calc(9 * var(--u));
+  padding: calc(2 * var(--u)) 0;
+}
+#ec-teams .ec-thead {
+  color: var(--paper-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+#ec-teams .ec-trow.red { color: var(--red); }
+#ec-teams .ec-trow.blue { color: var(--blue); }
+#ec-teams .ec-tsub {
+  font-family: var(--finefont);
+  font-size: calc(8 * var(--u));
+  color: var(--paper-dim);
+  padding-bottom: calc(4 * var(--u));
+}
+
+/* --- legible at 360px --------------------------------------------------- */
+/* The embedded featured-match iframe is ~360px wide, so the chrome is checked
+   AT 360px. `relayout()` already sets --hudscale and toggles #stage.tiny at
+   boardW <= 620; these four rules are what the note pins on top of it. */
+@media (max-width: 640px) {
+  .plate .tiles-label,
+  .plate .lux-alias { display: none; }
+}
+#stage.tiny .plate .tiles-label,
+#stage.tiny .plate .lux-sub,
+#stage.tiny .plate .lux-alias { display: none; }
+#stage.tiny #clock .lux-tinyline { display: block; }
+#clock .lux-tinyline {
+  display: none;
+  font-family: var(--finefont);
+  font-size: calc(7.5 * var(--u));
+  color: var(--paper-dim);
+  white-space: nowrap;
+}
+#stage.tiny #cyclebar .cyc .num { display: none; }
+#stage.tiny #researchrail .rr { height: calc(5 * var(--u)); }
+#stage.tiny #researchrail .rr-cap { display: none; }
+#stage.tiny #fuelstrip .fs .lbl { display: none; }
+</style>
+<script>
+(function () {
+  'use strict';
+  // Every name here carries a `lux` prefix ON PURPOSE. The page's chrome alias
+  // block declares the shared beat builder with a hoisted `var markBeat`, so a
+  // game-block function of that same name would be silently swallowed by it
+  // and the scrubber would end up with unlabelled div markers that never seek
+  // (cogame-tandem, 2026-08-23). tests/test_lux_viewer.nim asserts no
+  // identifier below this banner collides with the alias list above it.
+  var CTX = null;
+  var placed = {};            // "tick|kind|seat" -> true (dedup)
+  var seenDirective = {};
+  var plateBuilt = false;
+  var lastNight = null;
+
+  function luxId(id) { return document.getElementById(id); }
+  function luxEsc(t) {
+    return String(t).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function luxScrubGeometry(s) {
+    var st = Math.max(0, s.st || 0);
+    var mx = Math.max(st + 1, s.mx || 1);
+    return { st: st, span: mx - st };
+  }
+
+  // A LABELLED, CLICKABLE BUTTON — never chrome_common's div marker.
+  function luxBeat(s, tick, kind, seat, label) {
+    var key = tick + '|' + kind + '|' + seat;
+    if (placed[key]) return;
+    placed[key] = true;
+    var scrub = luxId('scrub');
+    if (!scrub) return;
+    var g = luxScrubGeometry(s);
+    var side = seat === 0 ? 'red' : seat === 1 ? 'blue' : '';
+    var el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'beat-marker ' + kind + (side ? ' ' + side : '');
+    el.style.left =
+      (Math.min(1, Math.max(0, (tick - g.st) / g.span)) * 100) + '%';
+    el.title = label;
+    el.setAttribute('aria-label', label);
+    el.__tick = tick;
+    el.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      if (CTX) CTX.send('s:' + tick);
+    });
+    scrub.appendChild(el);
+  }
+
+  function luxFeed(html, cls) {
+    if (!CTX) return;
+    var row = document.createElement('div');
+    row.className = 'feed-row' + (cls ? ' ' + cls : '');
+    row.innerHTML = html;
+    CTX.pushFeed(row);
+  }
+
+  function luxCell(s, i) {
+    var size = s.size || 16;
+    return '(' + (i % size) + ',' + Math.floor(i / size) + ')';
+  }
+
+  function luxSide(seat) { return seat === 0 ? 'RED' : 'BLUE'; }
+
+  // ---- the scorebug plates ------------------------------------------------
+  // The plate CONTENTS are this block's; the plate CHROME (`.plates`,
+  // `.plate`, `.side-l/.side-r`, the clock column) is the starter's.
+  function luxBuildPlates(s) {
+    if (plateBuilt) return;
+    var left = luxId('plates-l'), right = luxId('plates-r');
+    if (!left || !right) return;
+    plateBuilt = true;
+    ['red', 'blue'].forEach(function (team, index) {
+      var host = index === 0 ? left : right;
+      var plate = document.createElement('div');
+      plate.className = 'plate side-' + (index === 0 ? 'l' : 'r');
+      plate.setAttribute('data-team', team);
+      plate.style.setProperty('--tc', CTX ? CTX.teamCol(team) : '');
+      plate.innerHTML =
+        '<span class="lux-chip"></span>' +
+        '<span class="team-id">' +
+        '<span class="team-name plate-name" id="lux-name-' + team + '">' +
+        team.toUpperCase() + '</span>' +
+        '<span class="lux-sub">' +
+        '<span class="lux-alias" id="lux-alias-' + team + '"></span>' +
+        '<span id="lux-stats-' + team + '"></span>' +
+        '<span class="lux-fallback" id="lux-fb-' + team + '"></span>' +
+        '</span></span>' +
+        '<span class="tiles-num" id="lux-tiles-' + team + '">0</span>' +
+        '<span class="tiles-label">City tiles</span>';
+      host.appendChild(plate);
+    });
+    var clock = luxId('clock');
+    if (clock && !luxId('lux-tinyline')) {
+      var line = document.createElement('div');
+      line.className = 'lux-tinyline';
+      line.id = 'lux-tinyline';
+      clock.appendChild(line);
+    }
+    var bug = luxId('scorebug');
+    if (bug && !luxId('cyclebar')) {
+      var col = bug.querySelector('.clock-col');
+      var bar = document.createElement('div');
+      bar.id = 'cyclebar';
+      var rail = document.createElement('div');
+      rail.id = 'researchrail';
+      rail.innerHTML =
+        '<span class="rr-cap">Research 0-200 · coal 50 · uranium 200</span>' +
+        '<div class="rr" data-team="red"><i></i>' +
+        '<span class="tick" data-at="25"></span></div>' +
+        '<div class="rr" data-team="blue"><i></i>' +
+        '<span class="tick" data-at="25"></span></div>';
+      (col || bug).appendChild(bar);
+      (col || bug).appendChild(rail);
+    }
+    var stage = luxId('stage');
+    if (stage && !luxId('fuelstrip')) {
+      var strip = document.createElement('div');
+      strip.id = 'fuelstrip';
+      stage.appendChild(strip);
+    }
+  }
+
+  function luxRenderPlates(s) {
+    luxBuildPlates(s);
+    var score = s.score || { cityTiles: [0, 0], units: [0, 0], fuel: [0, 0] };
+    var res = s.res || [0, 0];
+    var roster = s.roster || [];
+    ['red', 'blue'].forEach(function (team, seat) {
+      var name = '#' + seat, alias = '', fallbacks = 0;
+      for (var i = 0; i < roster.length; i++) {
+        if (roster[i].s === seat) {
+          name = roster[i].name || name;
+          alias = roster[i].alias || '';
+          fallbacks = roster[i].fallbacks || 0;
+        }
+      }
+      var nameEl = luxId('lux-name-' + team);
+      if (nameEl && nameEl.textContent !== name) nameEl.textContent = name;
+      var aliasEl = luxId('lux-alias-' + team);
+      if (aliasEl && aliasEl.textContent !== alias) aliasEl.textContent = alias;
+      var tilesEl = luxId('lux-tiles-' + team);
+      var tiles = String(score.cityTiles[seat]);
+      if (tilesEl && tilesEl.textContent !== tiles) tilesEl.textContent = tiles;
+      var statsEl = luxId('lux-stats-' + team);
+      var stats = score.units[seat] + ' units · ' + score.fuel[seat] +
+        ' fuel · ' + res[seat] + ' research';
+      if (statsEl && statsEl.textContent !== stats) statsEl.textContent = stats;
+      var fbEl = luxId('lux-fb-' + team);
+      var glyph = fallbacks > 0 ? '\u21AF' : '';
+      if (fbEl && fbEl.textContent !== glyph) fbEl.textContent = glyph;
+    });
+    var tiny = luxId('lux-tinyline');
+    if (tiny) {
+      var text = score.units[0] + '\u00B7' + score.fuel[0] + '\u00B7' + res[0] +
+        '   ' + score.units[1] + '\u00B7' + score.fuel[1] + '\u00B7' + res[1];
+      if (tiny.textContent !== text) tiny.textContent = text;
+    }
+  }
+
+  // ---- clock, cycle bar, research rail, fuel strip, night ---------------
+  function luxRenderClock(s) {
+    var timeEl = luxId('clock-time'), capEl = luxId('clock-caption');
+    if (!timeEl || s.ph === 'lobby') return;
+    var turn = s.turn || 0, turns = s.turns || 0;
+    var text = s.ph === 'gameover'
+      ? 'FINAL ' + turn + ' / ' + turns
+      : 'TURN ' + turn + ' / ' + turns +
+        (s.night ? ' \u00B7 NIGHT ' + s.nightTurn + '/' + s.nightTurns : '');
+    if (timeEl.textContent !== text) timeEl.textContent = text;
+    var score = s.score || { cityTiles: [0, 0] };
+    var every = 10;
+    var cap = 'cycle ' + (s.cycle || 1) + ' of ' + (s.cycles || 9) +
+      ' \u00B7 directive ' + (Math.floor(turn / every) + 1) + '/' +
+      Math.max(1, Math.ceil(turns / every)) +
+      ' \u00B7 RED ' + score.cityTiles[0] + ' \u2013 ' + score.cityTiles[1] +
+      ' BLUE';
+    if (capEl && capEl.textContent !== cap) capEl.textContent = cap;
+  }
+
+  function luxRenderCycleBar(s) {
+    var bar = luxId('cyclebar');
+    if (!bar) return;
+    var cycles = s.cycles || 9;
+    if (bar.childNodes.length !== cycles + 1) {
+      bar.innerHTML = '';
+      for (var i = 0; i < cycles; i++) {
+        var cell = document.createElement('div');
+        cell.className = 'cyc';
+        cell.innerHTML = '<span class="day"></span><span class="nite"></span>' +
+          '<span class="num">' + (i + 1) + '</span>';
+        bar.appendChild(cell);
+      }
+      var head = document.createElement('span');
+      head.className = 'playhead';
+      bar.appendChild(head);
+    }
+    var head2 = bar.querySelector('.playhead');
+    if (head2) {
+      var frac = Math.min(1, Math.max(0, (s.turn || 0) / Math.max(1, s.turns || 1)));
+      head2.style.left = (frac * 100) + '%';
+    }
+  }
+
+  function luxRenderResearch(s) {
+    var rail = luxId('researchrail');
+    if (!rail) return;
+    var res = s.res || [0, 0];
+    var max = s.uraniumAt || 200;
+    var bars = rail.querySelectorAll('.rr');
+    for (var i = 0; i < bars.length && i < 2; i++) {
+      var fill = bars[i].querySelector('i');
+      var pct = Math.min(100, (res[i] / max) * 100);
+      if (fill) fill.style.width = pct + '%';
+      bars[i].style.setProperty('--tc', CTX ? CTX.teamCol(i === 0 ? 'red' : 'blue') : '');
+      var tick = bars[i].querySelector('.tick');
+      if (tick) tick.style.left = ((s.coalAt || 50) / max * 100) + '%';
+      var crossed = res[i] >= (s.coalAt || 50);
+      bars[i].classList.toggle('flash', crossed && res[i] < (s.coalAt || 50) + 3);
+    }
+  }
+
+  function luxRenderFuel(s) {
+    var strip = luxId('fuelstrip');
+    if (!strip) return;
+    var cities = (s.cities || []).slice().sort(function (a, b) {
+      return b.tiles.length - a.tiles.length;
+    });
+    var perSide = [0, 0], rows = [];
+    var tiny = luxId('stage') && luxId('stage').classList.contains('tiny');
+    for (var i = 0; i < cities.length; i++) {
+      perSide[cities[i].seat] += cities[i].fuel;
+      if (!tiny && rows.length < 8) rows.push(cities[i]);
+    }
+    var html = '';
+    var nightLeft = Math.max(1, (s.nightTurns || 10) - (s.nightTurn || 0));
+    if (tiny) {
+      for (var seat = 0; seat < 2; seat++) {
+        html += '<div class="fs" style="--tc:' +
+          (CTX ? CTX.teamCol(seat === 0 ? 'red' : 'blue') : '') + '">' +
+          '<span class="bar"><i style="width:100%"></i></span>' +
+          '<span>' + perSide[seat] + '</span></div>';
+      }
+    } else {
+      for (var j = 0; j < rows.length; j++) {
+        var city = rows[j];
+        var need = city.upkeep * nightLeft;
+        var pct = Math.min(100, need > 0 ? (city.fuel / need) * 100 : 100);
+        html += '<div class="fs' + (city.fuel < need ? ' starving' : '') +
+          '" style="--tc:' +
+          (CTX ? CTX.teamCol(city.seat === 0 ? 'red' : 'blue') : '') + '">' +
+          '<span class="lbl">C' + city.id + '</span>' +
+          '<span class="bar"><i style="width:' + pct + '%"></i></span>' +
+          '<span>' + city.fuel + ' / ' + need + ' tonight</span></div>';
+      }
+    }
+    if (strip.innerHTML !== html) strip.innerHTML = html;
+  }
+
+  function luxRenderNight(s) {
+    var pool = luxId('lightpool');
+    if (!pool) return;
+    // The idea's central loop, made visible: the whole board washes to 55%
+    // blue over the two turns either side of dusk and back at dawn.
+    var alpha = 0;
+    if (s.night) {
+      alpha = Math.min(0.55, 0.28 + 0.14 * Math.min(2, s.nightTurn || 1));
+    } else if ((s.dayLength || 30) - ((s.turn || 0) % 40) <= 2) {
+      alpha = 0.18;
+    }
+    if (lastNight !== alpha) {
+      lastNight = alpha;
+      pool.style.background =
+        'radial-gradient(120% 90% at 50% 40%, rgba(20,32,64,' +
+        (alpha * 0.7).toFixed(3) + ') 0%, rgba(10,16,38,' +
+        alpha.toFixed(3) + ') 100%)';
+      pool.style.opacity = alpha > 0 ? '1' : '0';
+    }
+  }
+
+  // ---- the match feed: plain language, never internal notation -----------
+  function luxEvent(e, s, ctx) {
+    CTX = ctx;
+    switch (e.k) {
+      case 'citybuilt':
+        luxFeed('<span class="who ' + (e.seat === 0 ? 'red' : 'blue') + '">' +
+          luxSide(e.seat) + '</span><span class="glyph">builds a city tile at ' +
+          luxCell(s, e.cell) + '</span><span class="badge">' + e.tiles +
+          ' tiles</span>');
+        return true;
+      case 'citylost':
+        CTX.banner(luxSide(e.seat) + ' LOSES THE CITY AT ' + luxCell(s, e.cell) +
+          ' \u2014 ' + e.tiles + ' tiles, out of fuel',
+          e.seat === 0 ? 'red' : 'blue');
+        luxFeed('<span class="who ' + (e.seat === 0 ? 'red' : 'blue') + '">' +
+          luxSide(e.seat) + '</span><span class="glyph">loses the city at ' +
+          luxCell(s, e.cell) + ' \u2014 out of fuel</span>');
+        return true;
+      case 'research':
+        luxFeed('<span class="who ' + (e.seat === 0 ? 'red' : 'blue') + '">' +
+          luxSide(e.seat) + '</span><span class="glyph">unlocks ' +
+          luxEsc(String(e.kind).toUpperCase()) + '</span><span class="badge">' +
+          e.points + ' research</span>');
+        return true;
+      case 'unitlost':
+        luxFeed('<span class="who ' + (e.seat === 0 ? 'red' : 'blue') + '">' +
+          luxSide(e.seat) + '</span><span class="glyph">\u2019s ' + luxEsc(e.kind) +
+          ' dies in the open at ' + luxCell(s, e.cell) + '</span>');
+        return true;
+      case 'unitbuilt':
+        luxFeed('<span class="who ' + (e.seat === 0 ? 'red' : 'blue') + '">' +
+          luxSide(e.seat) + '</span><span class="glyph">builds a ' +
+          luxEsc(e.kind) + '</span>');
+        return true;
+      case 'depleted':
+        luxFeed('<span class="glyph">the ' + luxEsc(e.kind) + ' at ' +
+          luxCell(s, e.cell) + ' runs out</span>');
+        return true;
+      case 'dusk':
+        CTX.banner('NIGHT ' + e.cycle + ' FALLS \u2014 RED ' + e.fuel[0] +
+          ' fuel / ' + e.cityTiles[0] + ' tiles \u00B7 BLUE ' + e.fuel[1] +
+          ' / ' + e.cityTiles[1], '');
+        return true;
+      case 'dawn':
+        luxFeed('<span class="glyph">dawn of cycle ' + e.cycle + '</span>');
+        return true;
+    }
+    return false;
+  }
+
+  // The commander lines: the directive `note` is what a spectator actually
+  // sees the LLM doing, and it appears HERE and nowhere else.
+  function luxDirectives(s) {
+    var records = s.dir;
+    if (!records || !records.length) return;
+    for (var i = 0; i < records.length; i++) {
+      var d = records[i];
+      var key = d.turn + ':' + d.seat;
+      if (seenDirective[key]) continue;
+      seenDirective[key] = true;
+      if (!d.note) continue;
+      luxFeed('<span class="who ' + (d.seat === 0 ? 'red' : 'blue') + '">' +
+        luxEsc(d.alias) + '</span><span class="glyph">:</span>' +
+        '<span class="badge">' + luxEsc(d.note) + '</span>');
+    }
+  }
+
+  function luxRenderEndcard(s) {
+    var card = luxId('endcard');
+    if (!card) return;
+    card.classList.add('on');
+    var results = s.results || {};
+    var over = s.over || {};
+    var roster = s.roster || [];
+    function nameOf(seat) {
+      for (var i = 0; i < roster.length; i++) {
+        if (roster[i].s === seat) return roster[i].name || ('#' + seat);
+      }
+      return '#' + seat;
+    }
+    var tiles = (results.cityTiles || [0, 0]);
+    var winner = over.draw ? -1 : (over.winner === 'red' ? 0 : 1);
+    var head = luxId('ec-headline');
+    if (head) {
+      head.textContent = over.draw
+        ? 'LUX \u2014 DRAWN AT ' + tiles[0] + ' CITY TILES'
+        : 'LUX \u2014 ' + nameOf(winner).toUpperCase() + ' ' +
+          Math.max(tiles[0], tiles[1]) + ' CITY TILES TO ' +
+          Math.min(tiles[0], tiles[1]);
+    }
+    var cond = luxId('ec-wincond');
+    if (cond) {
+      cond.textContent = 'Most city tiles standing at turn ' +
+        (results.turnsPlayed || 0) + ' \u2014 ' + (results.endRule || '');
+    }
+    var teams = luxId('ec-teams');
+    if (teams) {
+      var html = '<div class="ec-thead"><span>Side</span>' +
+        '<span>City tiles</span><span>Units</span><span>Fuel</span>' +
+        '<span>Research</span></div>';
+      for (var seat = 0; seat < 2; seat++) {
+        var side = seat === 0 ? 'red' : 'blue';
+        html += '<div class="ec-trow ' + side + '"><span>' +
+          luxEsc(nameOf(seat)) + '</span><span>' + tiles[seat] + '</span>' +
+          '<span>' + (results.units || [0, 0])[seat] + '</span>' +
+          '<span>' + (results.fuel || [0, 0])[seat] + '</span>' +
+          '<span>' + (results.research || [0, 0])[seat] + '</span></div>' +
+          '<div class="ec-tsub">built ' +
+          (results.cityTilesBuilt || [0, 0])[seat] + ' / lost ' +
+          (results.cityTilesLost || [0, 0])[seat] + ' \u00B7 mined ' +
+          ((results.resourcesMined || [[0, 0, 0], [0, 0, 0]])[seat] || []).join('-') +
+          ' (wood-coal-uranium)</div>';
+      }
+      teams.innerHTML = html;
+    }
+    var how = luxId('ec-how');
+    if (how) {
+      var lost = results.cityTilesLost || [0, 0];
+      var research = results.research || [0, 0];
+      how.textContent = (winner >= 0 ? luxSide(winner) : 'NOBODY') +
+        (research[Math.max(0, winner)] < 200
+          ? ' never researched uranium and won anyway'
+          : ' bought the whole fuel ladder') +
+        ' \u2014 ' + luxSide(winner === 0 ? 1 : 0) + ' lost ' +
+        lost[winner === 0 ? 1 : 0] + ' city tiles to the night.';
+    }
+  }
+
+  function luxFrame(s, ctx, jumped) {
+    CTX = ctx;
+    if (jumped) placed = {};
+    luxRenderPlates(s);
+    luxRenderClock(s);
+    luxRenderCycleBar(s);
+    luxRenderResearch(s);
+    luxRenderFuel(s);
+    luxRenderNight(s);
+    luxDirectives(s);
+    // The up-front beat timeline (shipped ONCE by the server, from the
+    // load-time pre-scan) places every marker before playback reaches it.
+    if (s.beats && s.beats.length) {
+      for (var i = 0; i < s.beats.length; i++) {
+        var b = s.beats[i];
+        if (b.k === 'dusk' || b.k === 'research' || b.k === 'citylost' ||
+            b.k === 'end') {
+          luxBeat(s, b.t, b.k, b.seat == null ? -1 : b.seat,
+            (b.label || b.k) + ' \u2014 click to jump here');
+        }
+      }
+    }
+  }
+
+  window.LuxChrome = {
+    install: function (ctx) { CTX = ctx; },
+    frame: luxFrame,
+    event: luxEvent,
+    endcard: function (s, ctx) { CTX = ctx; luxRenderEndcard(s); }
+  };
+})();
+</script>
+
+</body>
+</html>

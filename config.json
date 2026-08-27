@@ -1,0 +1,15 @@
+{
+  "num_agents": 2,
+  "minPlayers": 2,
+  "teams": 2,
+  "cogsPerTeam": 1,
+  "players": [{"name": "Red"}, {"name": "Blue"}],
+  "mapSize": 16,
+  "maxTurns": 360,
+  "cycleLength": 40,
+  "dayLength": 30,
+  "directiveEvery": 10,
+  "fastMode": true,
+  "showPlayerLabels": false,
+  "fullyObservable": true
+}

@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>lux-ai renderer fixture</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0908; }
+  iframe { display: block; border: 0; background: #0b0908; }
+</style>
+</head>
+<body>
+<!--
+  The worst-case chrome fixture.
+
+  docker_smoke.sh runs with NO ANTHROPIC_API_KEY, so every seat in the CI replay
+  plays scripted and a scripted baseline emits NO `note` at all — the smoke
+  replay can therefore never exercise the feed's commander-line path, the full
+  fuel strip, a research rail past 200 or a citylost banner (the cogchemists
+  2026-08-24 scar).
+
+  This page LOADS THE SHIPPED `dist/static-replay-viewer/index.html` in an
+  iframe and shims ONLY the wasm entry — it does not re-implement any drawing
+  (the particle-worlds 2026-08-26 scar) — then drives the real page's own text
+  path with a full-cap 160-rune note on both seats, eight cities in the fuel
+  strip, a research rail crossing 200, a deep-night frame and a citylost
+  banner, at 360 / 620 / 1280 px.
+
+  Run it with the same harness the real bundle gets:
+    node tools/ci/viewer_smoke.mjs --bundle dist/static-replay-viewer \
+      --replay <anything> --url http://127.0.0.1:PORT/renderer_fixture.html \
+      --strict-text-bounds
+-->
+<script>
+(function () {
+  'use strict';
+
+  var WIDTHS = [360, 620, 1280];
+  var NOTE_A = 'take the coal belt at column 3 before they research; two ' +
+    'tiles on the wood edge and the cart paves the road home tonight, then ' +
+    'we bank fuel and hold the blob compact until dawn of cycle six ok!!';
+  var NOTE_B = 'they are one tile ahead and out of wood; turtle into the big ' +
+    'city, burn coal only, and let their western blob starve in night six ' +
+    'while we keep every worker inside the walls until dawn arrives!!!';
+
+  function runeCap(text, cap) {
+    return Array.from(text).slice(0, cap).join('');
+  }
+
+  function cities() {
+    var out = [];
+    for (var i = 0; i < 8; i++) {
+      out.push({
+        id: i,
+        seat: i % 2,
+        fuel: i === 3 ? 12 : 400 + i * 260,
+        upkeep: 23 * (i + 2) - 5 * i,
+        tiles: [70 + i, 71 + i, 86 + i]
+      });
+    }
+    return out;
+  }
+
+  function units() {
+    var out = [];
+    for (var i = 0; i < 14; i++) {
+      out.push({
+        u: i, seat: i % 2, k: i % 3 === 0 ? 'cart' : 'worker',
+        i: 40 + i * 7, w: i * 7, c: i, r: 0, cd: 0
+      });
+    }
+    return out;
+  }
+
+  function frame(tick, events) {
+    return {
+      t: tick, mt: 360, st: 48, mx: 480, ph: 'playing', lob: 0,
+      sp: 1, pl: true, lp: false, sk: true, ff: false, en: true, mm: -1,
+      pov: -1, bs: 1,
+      teams: {
+        red: { lives: 12, cityTiles: 12, units: 7, fuel: 3200, research: 212,
+               policies: ['daveey'] },
+        blue: { lives: 9, cityTiles: 9, units: 6, fuel: 1400, research: 204,
+                policies: ['daveey-1'] }
+      },
+      roster: [
+        { s: 0, seat: 0, team: 'red', name: 'daveey', pol: 'lux-ai-lumberjack',
+          alias: 'RED-alpha', col: '#e0523a', kind: 'llm', fallbacks: 1 },
+        { s: 1, seat: 1, team: 'blue', name: 'daveey-1',
+          pol: 'lux-ai-nightwatch', alias: 'BLUE-alpha', col: '#3f7cc4',
+          kind: 'llm', fallbacks: 0 }
+      ],
+      events: events || [],
+      dir: [
+        { seat: 0, alias: 'RED-alpha', turn: tick, stance: 'expand',
+          source: 'llm', note: runeCap(NOTE_A, 160) },
+        { seat: 1, alias: 'BLUE-alpha', turn: tick, stance: 'turtle',
+          source: 'llm', note: runeCap(NOTE_B, 160) }
+      ],
+      turn: 234, turns: 360, cycle: 6, cycles: 9,
+      night: true, nightTurn: 8, nightTurns: 10, dayLength: 30,
+      size: 16, res: [212, 204], coalAt: 50, uraniumAt: 200,
+      terrain: [{ i: 37, k: 'wood', a: 288 }, { i: 55, k: 'coal', a: 120 },
+                { i: 91, k: 'uranium', a: 40 }],
+      roads: [{ i: 84, l: 3 }, { i: 85, l: 6 }],
+      cities: cities(),
+      units: units(),
+      score: { cityTiles: [12, 9], units: [7, 6], fuel: [3200, 1400],
+               leader: 0 },
+      beats: [
+        { t: 90, turn: 30, k: 'dusk', seat: -1, label: 'Night 1 falls' },
+        { t: 150, turn: 110, k: 'research', seat: 0,
+          label: 'RED unlocks URANIUM at turn 110' },
+        { t: 240, turn: 190, k: 'citylost', seat: 1,
+          label: 'BLUE loses a city at turn 190' },
+        { t: 470, turn: 360, k: 'end', seat: 0, label: 'Final turn 360' }
+      ],
+      lulls: [[300, 340]],
+      lead: { teams: ['red', 'blue'], pts: [[48, 1, 1], [200, 8, 6], [400, 12, 9]] }
+    };
+  }
+
+  var EVENTS = [
+    { k: 'citylost', t: 400, seat: 1, cell: 44, tiles: 3, cityId: '2' },
+    { k: 'research', t: 401, seat: 0, kind: 'uranium', points: 200 },
+    { k: 'citybuilt', t: 402, seat: 0, cell: 71, tiles: 12, cityId: '0' },
+    { k: 'unitlost', t: 403, seat: 1, cell: 210, kind: 'worker',
+      cause: 'night upkeep' },
+    { k: 'depleted', t: 404, cell: 37, kind: 'wood' },
+    { k: 'dusk', t: 405, cycle: 6, cityTiles: [12, 9], fuel: [3200, 1400] }
+  ];
+
+  var SHIM = [
+    '<script>',
+    '(function () {',
+    '  var listeners = null;',
+    '  window.LuxStaticReplay = {',
+    '    createCore: function (config) {',
+    '      listeners = config;',
+    '      return {',
+    '        start: function () {',
+    '          config.onStatus("open");',
+    '          config.onFirstFrame();',
+    '          document.documentElement.setAttribute(',
+    '            "data-replay-loaded", "true");',
+    '        },',
+    '        stop: function () {},',
+    '        sendCommand: function () {},',
+    '        clickMap: function () {},',
+    '        zoomAt: function () {}, setZoom: function () {},',
+    '        panBy: function () {}, panByMap: function () {},',
+    '        panTo: function () {}, resetView: function () {},',
+    '        attachMinimap: function () {},',
+    '        getTransform: function () {',
+    '          return { scale: 1, offsetX: 0, offsetY: 0, nativeW: 384,',
+    '                   nativeH: 384, zoom: 1, minZoom: 1, maxZoom: 12,',
+    '                   fitScale: 1, focusX: 0, focusY: 0, visW: 384,',
+    '                   visH: 384 };',
+    '        },',
+    '        setViewportFit: function () {},',
+    '        getPaceStats: function () {',
+    '          return { enabled: false, queued: 0, presented: 0,',
+    '                   interval: 66, draws: 1 };',
+    '        }',
+    '      };',
+    '    }',
+    '  };',
+    '  window.__luxFixtureFeed = function (state) {',
+    '    if (listeners && listeners.onText) listeners.onText(JSON.stringify(state));',
+    '  };',
+    '}());',
+    '<\/script>'
+  ].join('\n');
+
+  function build(width, index) {
+    var host = document.createElement('iframe');
+    host.width = width;
+    host.height = Math.round(width * 203 / 360);
+    document.body.appendChild(host);
+    return fetch('./index.html').then(function (response) {
+      return response.text();
+    }).then(function (page) {
+      // Shim ONLY the wasm entry: everything else is the shipped page.
+      var patched = page.replace(
+        '<script src="./static_replay.js"><\/script>',
+        SHIM + '\n<script src="./static_replay.js"><\/script>');
+      if (patched === page) {
+        throw new Error('renderer fixture: the shipped index.html no longer ' +
+          'loads ./static_replay.js — the shim has nowhere to go');
+      }
+      var doc = host.contentDocument;
+      doc.open();
+      doc.write(patched);
+      doc.close();
+      return new Promise(function (resolve) {
+        var tries = 0;
+        function pump() {
+          tries++;
+          var feed = host.contentWindow.__luxFixtureFeed;
+          if (!feed) {
+            if (tries > 200) {
+              throw new Error('renderer fixture: the page never created a core');
+            }
+            return setTimeout(pump, 25);
+          }
+          feed(frame(430, index === 0 ? EVENTS : []));
+          setTimeout(function () { feed(frame(440, [])); resolve(); }, 60);
+        }
+        pump();
+      });
+    });
+  }
+
+  Promise.all(WIDTHS.map(build)).then(function () {
+    document.documentElement.setAttribute('data-replay-loaded', 'true');
+  }).catch(function (error) {
+    document.documentElement.setAttribute('data-replay-error', String(error));
+  });
+}());
+</script>
+</body>
+</html>

@@ -1,0 +1,701 @@
+<!-- ============================================================
+     LUX-AI additions to the inherited coworld-ctf chrome
+     ============================================================
+     Everything above this banner is the starter's broadcast page. It was
+     edited in exactly two ways, both of them DELETIONS the design note names:
+     the `#viewpanel` cluster (zoom bar + minimap — the board is a fixed 16x16
+     grid with no off-frame area and `relayout()` fits it whole at every width
+     including 360px, so per the pin a fixed arena drops it entirely), and
+     `#fpv*` / `#povBadge` with the ctf scorebug internals, endcard columns and
+     flag/lives/kill machinery that fed them. `scripts/fork_broadcast_page.py`
+     performs those deletions from the starter mount, so the fork is
+     reproducible and reviewable.
+
+     Nothing here touches the transport band. `relayout()` still owns
+     --hudscale, --topband and --band on :root; the endcard still stops at
+     bottom: var(--band, 0px) and is still dismissed by every seek; and every
+     scrubber beat this block draws is a LABELLED, CLICKABLE BUTTON that seeks
+     on click, styled for EVERY kind the sim emits and no others — dusk,
+     research, citylost, end. The builder carries a `lux` prefix precisely so
+     it can never be shadowed by the chrome alias block's hoisted
+     `var markBeat` (the cogame-tandem 2026-08-23 hoisting trap).
+     ============================================================ -->
+<style>
+/* --- scorebug plates ---------------------------------------------------- */
+/* The plate name must survive a 360px featured-match iframe: it grows into
+   whatever room the plate has and ellipsises only when it genuinely runs out,
+   never collapsing to a bare "…". */
+.plate-name {
+  flex: 1 1 auto;
+  min-width: 3.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.plate .tiles-num {
+  font-family: var(--pixfont);
+  font-size: calc(26 * var(--u));
+  line-height: 1;
+  color: var(--tc, var(--paper));
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+.plate .tiles-label {
+  font-family: var(--finefont);
+  font-size: calc(8 * var(--u));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  white-space: nowrap;
+}
+.plate .lux-sub {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  margin-top: calc(2 * var(--u));
+  font-family: var(--finefont);
+  font-size: calc(8.5 * var(--u));
+  color: var(--paper-dim);
+  white-space: nowrap;
+}
+.plate.side-r .lux-sub { flex-direction: row-reverse; }
+.plate .lux-alias {
+  font-family: var(--finefont);
+  font-size: calc(7.5 * var(--u));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+}
+.plate .lux-fallback { color: var(--amber); font-family: var(--pixfont); }
+.plate .lux-chip {
+  width: calc(9 * var(--u));
+  height: calc(9 * var(--u));
+  background: var(--tc, var(--paper));
+  flex: none;
+}
+
+/* --- the cycle bar: nine cycles, each 30 light + 10 dark ---------------- */
+#cyclebar {
+  display: flex;
+  gap: calc(2 * var(--u));
+  align-items: stretch;
+  height: calc(9 * var(--u));
+  margin-top: calc(3 * var(--u));
+}
+#cyclebar .cyc {
+  flex: 1 1 0;
+  display: flex;
+  position: relative;
+  background: rgba(12, 9, 6, 0.5);
+}
+#cyclebar .cyc .day { flex: 3 1 0; background: rgba(232, 163, 61, 0.42); }
+#cyclebar .cyc .nite { flex: 1 1 0; background: rgba(40, 58, 96, 0.85); }
+#cyclebar .cyc .num {
+  position: absolute;
+  inset: 0;
+  font-family: var(--finefont);
+  font-size: calc(6.5 * var(--u));
+  color: var(--paper);
+  opacity: 0.7;
+  text-align: center;
+}
+#cyclebar .playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc(2 * var(--u));
+  background: var(--amber);
+}
+
+/* --- the research rail: two bars 0..200 with the 50/200 ticks ----------- */
+#researchrail {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--u));
+  margin-top: calc(3 * var(--u));
+}
+#researchrail .rr {
+  position: relative;
+  height: calc(7 * var(--u));
+  background: rgba(12, 9, 6, 0.55);
+}
+#researchrail .rr i {
+  display: block;
+  height: 100%;
+  background: var(--tc, var(--paper));
+}
+#researchrail .rr .tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc(1 * var(--u));
+  background: rgba(242, 232, 216, 0.55);
+}
+#researchrail .rr.flash { box-shadow: 0 0 0 calc(1.5 * var(--u)) var(--amber); }
+#researchrail .rr-cap {
+  font-family: var(--finefont);
+  font-size: calc(7 * var(--u));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+}
+
+/* --- the fuel strip: one labelled bar per city -------------------------- */
+#fuelstrip {
+  position: absolute;
+  left: calc(8 * var(--u));
+  top: calc(var(--topband) + 8 * var(--u));
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--u));
+  pointer-events: none;
+  z-index: 4;
+}
+#fuelstrip .fs {
+  display: flex;
+  align-items: center;
+  gap: calc(4 * var(--u));
+  font-family: var(--finefont);
+  font-size: calc(7.5 * var(--u));
+  color: var(--paper-dim);
+  background: rgba(12, 9, 6, 0.45);
+  padding: calc(1 * var(--u)) calc(3 * var(--u));
+}
+#fuelstrip .fs .bar {
+  width: calc(48 * var(--u));
+  height: calc(5 * var(--u));
+  background: rgba(12, 9, 6, 0.7);
+}
+#fuelstrip .fs .bar i { display: block; height: 100%; background: var(--tc); }
+#fuelstrip .fs.starving .bar i { background: var(--red); }
+.fl-cap {
+  font-family: var(--finefont);
+  font-size: calc(7 * var(--u));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+}
+
+/* --- scrubber beats: one rule per kind lux-ai emits, and no others ------ */
+/* Buttons, not divs: each carries a title + aria-label and seeks on click. */
+button.beat-marker {
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+  background: var(--paper-dim);
+}
+.beat-marker.dusk {
+  background: rgba(120, 150, 220, 0.9);
+  width: calc(2 * var(--u));
+  height: calc(12 * var(--u));
+}
+.beat-marker.research {
+  background: var(--paper);
+  width: calc(2 * var(--u));
+  height: calc(8 * var(--u));
+}
+.beat-marker.research.red { background: var(--red); }
+.beat-marker.research.blue { background: var(--blue); }
+.beat-marker.citylost { height: calc(10 * var(--u)); width: calc(3 * var(--u)); }
+.beat-marker.citylost.red { background: var(--red); }
+.beat-marker.citylost.blue { background: var(--blue); }
+.beat-marker.end {
+  background: var(--amber);
+  width: calc(3 * var(--u));
+  height: calc(14 * var(--u));
+}
+
+/* --- endcard columns ---------------------------------------------------- */
+#ec-teams .ec-thead,
+#ec-teams .ec-trow {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(4, 1fr);
+  gap: calc(6 * var(--u));
+  font-family: var(--finefont);
+  font-size: calc(9 * var(--u));
+  padding: calc(2 * var(--u)) 0;
+}
+#ec-teams .ec-thead {
+  color: var(--paper-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+#ec-teams .ec-trow.red { color: var(--red); }
+#ec-teams .ec-trow.blue { color: var(--blue); }
+#ec-teams .ec-tsub {
+  font-family: var(--finefont);
+  font-size: calc(8 * var(--u));
+  color: var(--paper-dim);
+  padding-bottom: calc(4 * var(--u));
+}
+
+/* --- legible at 360px --------------------------------------------------- */
+/* The embedded featured-match iframe is ~360px wide, so the chrome is checked
+   AT 360px. `relayout()` already sets --hudscale and toggles #stage.tiny at
+   boardW <= 620; these four rules are what the note pins on top of it. */
+@media (max-width: 640px) {
+  .plate .tiles-label,
+  .plate .lux-alias { display: none; }
+}
+#stage.tiny .plate .tiles-label,
+#stage.tiny .plate .lux-sub,
+#stage.tiny .plate .lux-alias { display: none; }
+#stage.tiny #clock .lux-tinyline { display: block; }
+#clock .lux-tinyline {
+  display: none;
+  font-family: var(--finefont);
+  font-size: calc(7.5 * var(--u));
+  color: var(--paper-dim);
+  white-space: nowrap;
+}
+#stage.tiny #cyclebar .cyc .num { display: none; }
+#stage.tiny #researchrail .rr { height: calc(5 * var(--u)); }
+#stage.tiny #researchrail .rr-cap { display: none; }
+#stage.tiny #fuelstrip .fs .lbl { display: none; }
+</style>
+<script>
+(function () {
+  'use strict';
+  // Every name here carries a `lux` prefix ON PURPOSE. The page's chrome alias
+  // block declares the shared beat builder with a hoisted `var markBeat`, so a
+  // game-block function of that same name would be silently swallowed by it
+  // and the scrubber would end up with unlabelled div markers that never seek
+  // (cogame-tandem, 2026-08-23). tests/test_lux_viewer.nim asserts no
+  // identifier below this banner collides with the alias list above it.
+  var CTX = null;
+  var placed = {};            // "tick|kind|seat" -> true (dedup)
+  var seenDirective = {};
+  var plateBuilt = false;
+  var lastNight = null;
+
+  function luxId(id) { return document.getElementById(id); }
+  function luxEsc(t) {
+    return String(t).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function luxScrubGeometry(s) {
+    var st = Math.max(0, s.st || 0);
+    var mx = Math.max(st + 1, s.mx || 1);
+    return { st: st, span: mx - st };
+  }
+
+  // A LABELLED, CLICKABLE BUTTON — never chrome_common's div marker.
+  function luxBeat(s, tick, kind, seat, label) {
+    var key = tick + '|' + kind + '|' + seat;
+    if (placed[key]) return;
+    placed[key] = true;
+    var scrub = luxId('scrub');
+    if (!scrub) return;
+    var g = luxScrubGeometry(s);
+    var side = seat === 0 ? 'red' : seat === 1 ? 'blue' : '';
+    var el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'beat-marker ' + kind + (side ? ' ' + side : '');
+    el.style.left =
+      (Math.min(1, Math.max(0, (tick - g.st) / g.span)) * 100) + '%';
+    el.title = label;
+    el.setAttribute('aria-label', label);
+    el.__tick = tick;
+    el.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      if (CTX) CTX.send('s:' + tick);
+    });
+    scrub.appendChild(el);
+  }
+
+  function luxFeed(html, cls) {
+    if (!CTX) return;
+    var row = document.createElement('div');
+    row.className = 'feed-row' + (cls ? ' ' + cls : '');
+    row.innerHTML = html;
+    CTX.pushFeed(row);
+  }
+
+  function luxCell(s, i) {
+    var size = s.size || 16;
+    return '(' + (i % size) + ',' + Math.floor(i / size) + ')';
+  }
+
+  function luxSide(seat) { return seat === 0 ? 'RED' : 'BLUE'; }
+
+  // ---- the scorebug plates ------------------------------------------------
+  // The plate CONTENTS are this block's; the plate CHROME (`.plates`,
+  // `.plate`, `.side-l/.side-r`, the clock column) is the starter's.
+  function luxBuildPlates(s) {
+    if (plateBuilt) return;
+    var left = luxId('plates-l'), right = luxId('plates-r');
+    if (!left || !right) return;
+    plateBuilt = true;
+    ['red', 'blue'].forEach(function (team, index) {
+      var host = index === 0 ? left : right;
+      var plate = document.createElement('div');
+      plate.className = 'plate side-' + (index === 0 ? 'l' : 'r');
+      plate.setAttribute('data-team', team);
+      plate.style.setProperty('--tc', CTX ? CTX.teamCol(team) : '');
+      plate.innerHTML =
+        '<span class="lux-chip"></span>' +
+        '<span class="team-id">' +
+        '<span class="team-name plate-name" id="lux-name-' + team + '">' +
+        team.toUpperCase() + '</span>' +
+        '<span class="lux-sub">' +
+        '<span class="lux-alias" id="lux-alias-' + team + '"></span>' +
+        '<span id="lux-stats-' + team + '"></span>' +
+        '<span class="lux-fallback" id="lux-fb-' + team + '"></span>' +
+        '</span></span>' +
+        '<span class="tiles-num" id="lux-tiles-' + team + '">0</span>' +
+        '<span class="tiles-label">City tiles</span>';
+      host.appendChild(plate);
+    });
+    var clock = luxId('clock');
+    if (clock && !luxId('lux-tinyline')) {
+      var line = document.createElement('div');
+      line.className = 'lux-tinyline';
+      line.id = 'lux-tinyline';
+      clock.appendChild(line);
+    }
+    var bug = luxId('scorebug');
+    if (bug && !luxId('cyclebar')) {
+      var col = bug.querySelector('.clock-col');
+      var bar = document.createElement('div');
+      bar.id = 'cyclebar';
+      var rail = document.createElement('div');
+      rail.id = 'researchrail';
+      rail.innerHTML =
+        '<span class="rr-cap">Research 0-200 · coal 50 · uranium 200</span>' +
+        '<div class="rr" data-team="red"><i></i>' +
+        '<span class="tick" data-at="25"></span></div>' +
+        '<div class="rr" data-team="blue"><i></i>' +
+        '<span class="tick" data-at="25"></span></div>';
+      (col || bug).appendChild(bar);
+      (col || bug).appendChild(rail);
+    }
+    var stage = luxId('stage');
+    if (stage && !luxId('fuelstrip')) {
+      var strip = document.createElement('div');
+      strip.id = 'fuelstrip';
+      stage.appendChild(strip);
+    }
+  }
+
+  function luxRenderPlates(s) {
+    luxBuildPlates(s);
+    var score = s.score || { cityTiles: [0, 0], units: [0, 0], fuel: [0, 0] };
+    var res = s.res || [0, 0];
+    var roster = s.roster || [];
+    ['red', 'blue'].forEach(function (team, seat) {
+      var name = '#' + seat, alias = '', fallbacks = 0;
+      for (var i = 0; i < roster.length; i++) {
+        if (roster[i].s === seat) {
+          name = roster[i].name || name;
+          alias = roster[i].alias || '';
+          fallbacks = roster[i].fallbacks || 0;
+        }
+      }
+      var nameEl = luxId('lux-name-' + team);
+      if (nameEl && nameEl.textContent !== name) nameEl.textContent = name;
+      var aliasEl = luxId('lux-alias-' + team);
+      if (aliasEl && aliasEl.textContent !== alias) aliasEl.textContent = alias;
+      var tilesEl = luxId('lux-tiles-' + team);
+      var tiles = String(score.cityTiles[seat]);
+      if (tilesEl && tilesEl.textContent !== tiles) tilesEl.textContent = tiles;
+      var statsEl = luxId('lux-stats-' + team);
+      var stats = score.units[seat] + ' units · ' + score.fuel[seat] +
+        ' fuel · ' + res[seat] + ' research';
+      if (statsEl && statsEl.textContent !== stats) statsEl.textContent = stats;
+      var fbEl = luxId('lux-fb-' + team);
+      var glyph = fallbacks > 0 ? '\u21AF' : '';
+      if (fbEl && fbEl.textContent !== glyph) fbEl.textContent = glyph;
+    });
+    var tiny = luxId('lux-tinyline');
+    if (tiny) {
+      var text = score.units[0] + '\u00B7' + score.fuel[0] + '\u00B7' + res[0] +
+        '   ' + score.units[1] + '\u00B7' + score.fuel[1] + '\u00B7' + res[1];
+      if (tiny.textContent !== text) tiny.textContent = text;
+    }
+  }
+
+  // ---- clock, cycle bar, research rail, fuel strip, night ---------------
+  function luxRenderClock(s) {
+    var timeEl = luxId('clock-time'), capEl = luxId('clock-caption');
+    if (!timeEl || s.ph === 'lobby') return;
+    var turn = s.turn || 0, turns = s.turns || 0;
+    var text = s.ph === 'gameover'
+      ? 'FINAL ' + turn + ' / ' + turns
+      : 'TURN ' + turn + ' / ' + turns +
+        (s.night ? ' \u00B7 NIGHT ' + s.nightTurn + '/' + s.nightTurns : '');
+    if (timeEl.textContent !== text) timeEl.textContent = text;
+    var score = s.score || { cityTiles: [0, 0] };
+    var every = 10;
+    var cap = 'cycle ' + (s.cycle || 1) + ' of ' + (s.cycles || 9) +
+      ' \u00B7 directive ' + (Math.floor(turn / every) + 1) + '/' +
+      Math.max(1, Math.ceil(turns / every)) +
+      ' \u00B7 RED ' + score.cityTiles[0] + ' \u2013 ' + score.cityTiles[1] +
+      ' BLUE';
+    if (capEl && capEl.textContent !== cap) capEl.textContent = cap;
+  }
+
+  function luxRenderCycleBar(s) {
+    var bar = luxId('cyclebar');
+    if (!bar) return;
+    var cycles = s.cycles || 9;
+    if (bar.childNodes.length !== cycles + 1) {
+      bar.innerHTML = '';
+      for (var i = 0; i < cycles; i++) {
+        var cell = document.createElement('div');
+        cell.className = 'cyc';
+        cell.innerHTML = '<span class="day"></span><span class="nite"></span>' +
+          '<span class="num">' + (i + 1) + '</span>';
+        bar.appendChild(cell);
+      }
+      var head = document.createElement('span');
+      head.className = 'playhead';
+      bar.appendChild(head);
+    }
+    var head2 = bar.querySelector('.playhead');
+    if (head2) {
+      var frac = Math.min(1, Math.max(0, (s.turn || 0) / Math.max(1, s.turns || 1)));
+      head2.style.left = (frac * 100) + '%';
+    }
+  }
+
+  function luxRenderResearch(s) {
+    var rail = luxId('researchrail');
+    if (!rail) return;
+    var res = s.res || [0, 0];
+    var max = s.uraniumAt || 200;
+    var bars = rail.querySelectorAll('.rr');
+    for (var i = 0; i < bars.length && i < 2; i++) {
+      var fill = bars[i].querySelector('i');
+      var pct = Math.min(100, (res[i] / max) * 100);
+      if (fill) fill.style.width = pct + '%';
+      bars[i].style.setProperty('--tc', CTX ? CTX.teamCol(i === 0 ? 'red' : 'blue') : '');
+      var tick = bars[i].querySelector('.tick');
+      if (tick) tick.style.left = ((s.coalAt || 50) / max * 100) + '%';
+      var crossed = res[i] >= (s.coalAt || 50);
+      bars[i].classList.toggle('flash', crossed && res[i] < (s.coalAt || 50) + 3);
+    }
+  }
+
+  function luxRenderFuel(s) {
+    var strip = luxId('fuelstrip');
+    if (!strip) return;
+    var cities = (s.cities || []).slice().sort(function (a, b) {
+      return b.tiles.length - a.tiles.length;
+    });
+    var perSide = [0, 0], rows = [];
+    var tiny = luxId('stage') && luxId('stage').classList.contains('tiny');
+    for (var i = 0; i < cities.length; i++) {
+      perSide[cities[i].seat] += cities[i].fuel;
+      if (!tiny && rows.length < 8) rows.push(cities[i]);
+    }
+    var html = '';
+    var nightLeft = Math.max(1, (s.nightTurns || 10) - (s.nightTurn || 0));
+    if (tiny) {
+      for (var seat = 0; seat < 2; seat++) {
+        html += '<div class="fs" style="--tc:' +
+          (CTX ? CTX.teamCol(seat === 0 ? 'red' : 'blue') : '') + '">' +
+          '<span class="bar"><i style="width:100%"></i></span>' +
+          '<span>' + perSide[seat] + '</span></div>';
+      }
+    } else {
+      for (var j = 0; j < rows.length; j++) {
+        var city = rows[j];
+        var need = city.upkeep * nightLeft;
+        var pct = Math.min(100, need > 0 ? (city.fuel / need) * 100 : 100);
+        html += '<div class="fs' + (city.fuel < need ? ' starving' : '') +
+          '" style="--tc:' +
+          (CTX ? CTX.teamCol(city.seat === 0 ? 'red' : 'blue') : '') + '">' +
+          '<span class="lbl">C' + city.id + '</span>' +
+          '<span class="bar"><i style="width:' + pct + '%"></i></span>' +
+          '<span>' + city.fuel + ' / ' + need + ' tonight</span></div>';
+      }
+    }
+    if (strip.innerHTML !== html) strip.innerHTML = html;
+  }
+
+  function luxRenderNight(s) {
+    var pool = luxId('lightpool');
+    if (!pool) return;
+    // The idea's central loop, made visible: the whole board washes to 55%
+    // blue over the two turns either side of dusk and back at dawn.
+    var alpha = 0;
+    if (s.night) {
+      alpha = Math.min(0.55, 0.28 + 0.14 * Math.min(2, s.nightTurn || 1));
+    } else if ((s.dayLength || 30) - ((s.turn || 0) % 40) <= 2) {
+      alpha = 0.18;
+    }
+    if (lastNight !== alpha) {
+      lastNight = alpha;
+      pool.style.background =
+        'radial-gradient(120% 90% at 50% 40%, rgba(20,32,64,' +
+        (alpha * 0.7).toFixed(3) + ') 0%, rgba(10,16,38,' +
+        alpha.toFixed(3) + ') 100%)';
+      pool.style.opacity = alpha > 0 ? '1' : '0';
+    }
+  }
+
+  // ---- the match feed: plain language, never internal notation -----------
+  function luxEvent(e, s, ctx) {
+    CTX = ctx;
+    switch (e.k) {
+      case 'citybuilt':
+        luxFeed('<span class="who ' + (e.seat === 0 ? 'red' : 'blue') + '">' +
+          luxSide(e.seat) + '</span><span class="glyph">builds a city tile at ' +
+          luxCell(s, e.cell) + '</span><span class="badge">' + e.tiles +
+          ' tiles</span>');
+        return true;
+      case 'citylost':
+        CTX.banner(luxSide(e.seat) + ' LOSES THE CITY AT ' + luxCell(s, e.cell) +
+          ' \u2014 ' + e.tiles + ' tiles, out of fuel',
+          e.seat === 0 ? 'red' : 'blue');
+        luxFeed('<span class="who ' + (e.seat === 0 ? 'red' : 'blue') + '">' +
+          luxSide(e.seat) + '</span><span class="glyph">loses the city at ' +
+          luxCell(s, e.cell) + ' \u2014 out of fuel</span>');
+        return true;
+      case 'research':
+        luxFeed('<span class="who ' + (e.seat === 0 ? 'red' : 'blue') + '">' +
+          luxSide(e.seat) + '</span><span class="glyph">unlocks ' +
+          luxEsc(String(e.kind).toUpperCase()) + '</span><span class="badge">' +
+          e.points + ' research</span>');
+        return true;
+      case 'unitlost':
+        luxFeed('<span class="who ' + (e.seat === 0 ? 'red' : 'blue') + '">' +
+          luxSide(e.seat) + '</span><span class="glyph">\u2019s ' + luxEsc(e.kind) +
+          ' dies in the open at ' + luxCell(s, e.cell) + '</span>');
+        return true;
+      case 'unitbuilt':
+        luxFeed('<span class="who ' + (e.seat === 0 ? 'red' : 'blue') + '">' +
+          luxSide(e.seat) + '</span><span class="glyph">builds a ' +
+          luxEsc(e.kind) + '</span>');
+        return true;
+      case 'depleted':
+        luxFeed('<span class="glyph">the ' + luxEsc(e.kind) + ' at ' +
+          luxCell(s, e.cell) + ' runs out</span>');
+        return true;
+      case 'dusk':
+        CTX.banner('NIGHT ' + e.cycle + ' FALLS \u2014 RED ' + e.fuel[0] +
+          ' fuel / ' + e.cityTiles[0] + ' tiles \u00B7 BLUE ' + e.fuel[1] +
+          ' / ' + e.cityTiles[1], '');
+        return true;
+      case 'dawn':
+        luxFeed('<span class="glyph">dawn of cycle ' + e.cycle + '</span>');
+        return true;
+    }
+    return false;
+  }
+
+  // The commander lines: the directive `note` is what a spectator actually
+  // sees the LLM doing, and it appears HERE and nowhere else.
+  function luxDirectives(s) {
+    var records = s.dir;
+    if (!records || !records.length) return;
+    for (var i = 0; i < records.length; i++) {
+      var d = records[i];
+      var key = d.turn + ':' + d.seat;
+      if (seenDirective[key]) continue;
+      seenDirective[key] = true;
+      if (!d.note) continue;
+      luxFeed('<span class="who ' + (d.seat === 0 ? 'red' : 'blue') + '">' +
+        luxEsc(d.alias) + '</span><span class="glyph">:</span>' +
+        '<span class="badge">' + luxEsc(d.note) + '</span>');
+    }
+  }
+
+  function luxRenderEndcard(s) {
+    var card = luxId('endcard');
+    if (!card) return;
+    card.classList.add('on');
+    var results = s.results || {};
+    var over = s.over || {};
+    var roster = s.roster || [];
+    function nameOf(seat) {
+      for (var i = 0; i < roster.length; i++) {
+        if (roster[i].s === seat) return roster[i].name || ('#' + seat);
+      }
+      return '#' + seat;
+    }
+    var tiles = (results.cityTiles || [0, 0]);
+    var winner = over.draw ? -1 : (over.winner === 'red' ? 0 : 1);
+    var head = luxId('ec-headline');
+    if (head) {
+      head.textContent = over.draw
+        ? 'LUX \u2014 DRAWN AT ' + tiles[0] + ' CITY TILES'
+        : 'LUX \u2014 ' + nameOf(winner).toUpperCase() + ' ' +
+          Math.max(tiles[0], tiles[1]) + ' CITY TILES TO ' +
+          Math.min(tiles[0], tiles[1]);
+    }
+    var cond = luxId('ec-wincond');
+    if (cond) {
+      cond.textContent = 'Most city tiles standing at turn ' +
+        (results.turnsPlayed || 0) + ' \u2014 ' + (results.endRule || '');
+    }
+    var teams = luxId('ec-teams');
+    if (teams) {
+      var html = '<div class="ec-thead"><span>Side</span>' +
+        '<span>City tiles</span><span>Units</span><span>Fuel</span>' +
+        '<span>Research</span></div>';
+      for (var seat = 0; seat < 2; seat++) {
+        var side = seat === 0 ? 'red' : 'blue';
+        html += '<div class="ec-trow ' + side + '"><span>' +
+          luxEsc(nameOf(seat)) + '</span><span>' + tiles[seat] + '</span>' +
+          '<span>' + (results.units || [0, 0])[seat] + '</span>' +
+          '<span>' + (results.fuel || [0, 0])[seat] + '</span>' +
+          '<span>' + (results.research || [0, 0])[seat] + '</span></div>' +
+          '<div class="ec-tsub">built ' +
+          (results.cityTilesBuilt || [0, 0])[seat] + ' / lost ' +
+          (results.cityTilesLost || [0, 0])[seat] + ' \u00B7 mined ' +
+          ((results.resourcesMined || [[0, 0, 0], [0, 0, 0]])[seat] || []).join('-') +
+          ' (wood-coal-uranium)</div>';
+      }
+      teams.innerHTML = html;
+    }
+    var how = luxId('ec-how');
+    if (how) {
+      var lost = results.cityTilesLost || [0, 0];
+      var research = results.research || [0, 0];
+      how.textContent = (winner >= 0 ? luxSide(winner) : 'NOBODY') +
+        (research[Math.max(0, winner)] < 200
+          ? ' never researched uranium and won anyway'
+          : ' bought the whole fuel ladder') +
+        ' \u2014 ' + luxSide(winner === 0 ? 1 : 0) + ' lost ' +
+        lost[winner === 0 ? 1 : 0] + ' city tiles to the night.';
+    }
+  }
+
+  function luxFrame(s, ctx, jumped) {
+    CTX = ctx;
+    if (jumped) placed = {};
+    luxRenderPlates(s);
+    luxRenderClock(s);
+    luxRenderCycleBar(s);
+    luxRenderResearch(s);
+    luxRenderFuel(s);
+    luxRenderNight(s);
+    luxDirectives(s);
+    // The up-front beat timeline (shipped ONCE by the server, from the
+    // load-time pre-scan) places every marker before playback reaches it.
+    if (s.beats && s.beats.length) {
+      for (var i = 0; i < s.beats.length; i++) {
+        var b = s.beats[i];
+        if (b.k === 'dusk' || b.k === 'research' || b.k === 'citylost' ||
+            b.k === 'end') {
+          luxBeat(s, b.t, b.k, b.seat == null ? -1 : b.seat,
+            (b.label || b.k) + ' \u2014 click to jump here');
+        }
+      }
+    }
+  }
+
+  window.LuxChrome = {
+    install: function (ctx) { CTX = ctx; },
+    frame: luxFrame,
+    event: luxEvent,
+    endcard: function (s, ctx) { CTX = ctx; luxRenderEndcard(s); }
+  };
+})();
+</script>
+
+</body>
+</html>

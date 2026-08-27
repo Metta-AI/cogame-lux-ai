@@ -1,0 +1,7 @@
+dist/
+replay-viewer/dist/
+nimcache/
+nim.cfg
+*.exe
+lux-ai
+lux-ai-player

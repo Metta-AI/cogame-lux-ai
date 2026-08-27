@@ -1,0 +1,18 @@
+# ONE service, ONE image, TWO entrypoints: /bin/lux-ai (the game server, which
+# also makes every LLM call — the coworld secret is injected into the GAME pod)
+# and /bin/lux-ai-player (the thin seat registrar). The whole policy set is
+# env-switched inside this same image (PLAYER_PROMPT vs PLAYER_SCRIPTED), which
+# is what keeps a champion and a scripted filler byte-identical apart from
+# their environment.
+#
+# The service name is load-bearing: `coworld build` derives the manifest image
+# placeholder from it (service `lux_ai` -> {{LUX_AI_IMAGE}}). {{GAME_IMAGE}} is
+# not a thing (cogame-lantern 0.1.0).
+services:
+  lux_ai:
+    image: coworld-lux-ai:latest
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile
+      network: host

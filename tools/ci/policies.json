@@ -1,0 +1,35 @@
+[
+  {
+    "name": "lux-ai-lumberjack",
+    "run": "/bin/lux-ai-player",
+    "env": {
+      "PLAYER_PROMPT": "Wood first, cities second, research only when the wood tells you to.\nCycle 1 (turns 0-39): stance \"expand\", mine [\"wood\",\"coal\",\"uranium\"], research\n\"coal\", build \"auto\", workers 6, carts 0, night \"shelter\", focus on the richest\nwood tile on YOUR half. Six workers on wood out-builds anything else in the first\ncycle and city tiles are what you are scored on.\nFrom cycle 2 on, look at \"turns_of_fuel\" for EVERY city in your city_list before\nanything else. If any city shows survives_tonight false, switch stance to \"fuel\"\nfor that directive and set night \"haul\": losing a 5-tile city costs you five\npoints of score and it takes two cycles to rebuild them. Never let a city die to\nsave a worker.\nGrow city tiles in a COMPACT BLOB, not a line: set focus to a cell orthogonally\nadjacent to your largest city, because every touching pair takes 5 fuel a turn off\nthe bill and a 3x3 block of 9 tiles pays 147 a turn where 9 separate tiles pay 207.\nResearch target stays \"coal\" until research reaches 50, then set research \"none\"\nand put every city tile on building workers up to the unit cap. Do not chase\nuranium: 200 research points is six full cycles of a city tile doing nothing, and\nthe wood on a 16x16 map lasts about that long.\nKeep carts at 0 until you own 8 city tiles, then exactly 1, and set focus to your\ncoal cluster so the cart paves the road between the coal and your blob.\nIf your wood \"amount_left\" on your side drops under 800, switch mine to\n[\"coal\",\"wood\",\"uranium\"] immediately - a wood tile mined to zero never comes back\nand you want the last few hundred wood kept alive and regrowing.",
+      "PLAYER_POLICY_LABEL": "lux-ai-lumberjack"
+    }
+  },
+  {
+    "name": "lux-ai-nightwatch",
+    "run": "/bin/lux-ai-player",
+    "env": {
+      "PLAYER_PROMPT": "Win the second half. Cheap fuel loses to dense fuel, and coal is ten wood a unit.\nCycle 1: stance \"research\", mine [\"wood\",\"coal\",\"uranium\"], research \"coal\",\nbuild \"auto\", workers 4, carts 1, night \"shelter\", focus on your start city. Four\nworkers is enough to keep one small city alive through night 1 while your city\ntiles bank research points. Do not build a third city tile in cycle 1; you cannot\nfeed it yet.\nThe moment \"researched\" is true for coal, switch mine to [\"coal\",\"wood\",\"uranium\"]\nand focus to the richest coal tile on your half. One worker on coal brings home 50\nfuel a turn where a worker on wood brings 20 - after that, every night is cheap\nand you spend the daylight planting tiles instead of hauling sticks.\nThen set research \"uranium\" and leave it there. 200 points is affordable once your\ncities are not starving, and a single uranium worker is 80 fuel a turn. If you get\nuranium before turn 240, set stance \"expand\", workers 10, carts 2 and plant a tile\nevery time a worker fills.\nAlways keep carts >= 1 from cycle 2 on and set focus along the line between your\ncoal and your largest city: a paved road is a permanent doubling of everything\nthat walks on it, and it is the only compounding asset in this game.\nOn any directive turn where \"turns_to_dusk\" is 0 - you are being asked at\nnightfall - set night \"shelter\" and stance \"fuel\" unless EVERY city shows\nturns_of_fuel of 11 or more. Ten turns of night is the only thing that can kill\nyou; nothing on the board can.\nIf the standing shows you 3 or more city tiles behind after turn 240, switch\nstance to \"contest\" and focus on the opponent's richest resource tile: at that\npoint denying their last wood belt is worth more than one more tile of your own.",
+      "PLAYER_POLICY_LABEL": "lux-ai-nightwatch"
+    },
+    "player": "ply_bac48eb1-662e-44f8-973d-f3e016dccf5d"
+  },
+  {
+    "name": "lux-ai-forester",
+    "run": "/bin/lux-ai-player",
+    "env": {
+      "PLAYER_SCRIPTED": "forester",
+      "PLAYER_POLICY_LABEL": "lux-ai-forester"
+    }
+  },
+  {
+    "name": "lux-ai-prospector",
+    "run": "/bin/lux-ai-player",
+    "env": {
+      "PLAYER_SCRIPTED": "prospector",
+      "PLAYER_POLICY_LABEL": "lux-ai-prospector"
+    }
+  }
+]

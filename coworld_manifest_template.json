@@ -1,0 +1,820 @@
+{
+  "$schema": "https://softmax.com/schemas/coworld-manifest.json",
+  "tags": [
+    "lux",
+    "rts",
+    "economy",
+    "zero-sum",
+    "grid",
+    "port"
+  ],
+  "episode_timeout_minutes": 20,
+  "game": {
+    "name": "lux-ai",
+    "owner": "daveey@softmax.com",
+    "description": "Lux AI Season 1 on a seeded, mirror-symmetric 16x16 island: two sides gather wood, coal and uranium, spend research to unlock the better fuels, and every ten turns the sun goes down and each city must pay its light bill or die on the spot. Most city tiles standing at turn 360 wins.",
+    "runnable": {
+      "type": "game",
+      "image": "{{LUX_AI_IMAGE}}",
+      "run": [
+        "/bin/lux-ai"
+      ],
+      "env": {
+        "ANTHROPIC_API_KEY_URI": "secret://coworld/lux-ai/anthropic_api_key"
+      },
+      "source_url": "https://github.com/Metta-AI/cogame-lux-ai/tree/main"
+    },
+    "replay_viewer": {
+      "bundle": "static-replay-viewer"
+    },
+    "config_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tokens",
+        "players"
+      ],
+      "properties": {
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Runner-injected seat tokens. Required here because the runner supplies them; never present in a game_config in this manifest."
+        },
+        "players": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "slots": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "num_agents": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 2,
+          "maximum": 2
+        },
+        "minPlayers": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 2,
+          "maximum": 2
+        },
+        "teams": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 2,
+          "maximum": 2
+        },
+        "cogsPerTeam": {
+          "type": "integer",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 1
+        },
+        "seed": {
+          "type": "integer",
+          "default": 1734029581,
+          "minimum": 0
+        },
+        "mapSize": {
+          "type": "integer",
+          "enum": [
+            12,
+            16
+          ],
+          "default": 16
+        },
+        "woodClusters": {
+          "type": "integer",
+          "default": 4,
+          "minimum": 0,
+          "maximum": 16
+        },
+        "coalClusters": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 0,
+          "maximum": 16
+        },
+        "uraniumClusters": {
+          "type": "integer",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 16
+        },
+        "woodStart": {
+          "type": "integer",
+          "default": 300,
+          "minimum": 1,
+          "maximum": 2000
+        },
+        "coalStart": {
+          "type": "integer",
+          "default": 400,
+          "minimum": 1,
+          "maximum": 2000
+        },
+        "uraniumStart": {
+          "type": "integer",
+          "default": 325,
+          "minimum": 1,
+          "maximum": 2000
+        },
+        "maxTurns": {
+          "type": "integer",
+          "default": 360,
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "cycleLength": {
+          "type": "integer",
+          "default": 40,
+          "minimum": 2,
+          "maximum": 200
+        },
+        "dayLength": {
+          "type": "integer",
+          "default": 30,
+          "minimum": 1,
+          "maximum": 199
+        },
+        "directiveEvery": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 100
+        },
+        "cityCost": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "workerCargo": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "cartCargo": {
+          "type": "integer",
+          "default": 2000,
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "woodRate": {
+          "type": "integer",
+          "default": 20,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "coalRate": {
+          "type": "integer",
+          "default": 5,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "uraniumRate": {
+          "type": "integer",
+          "default": 2,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "coalResearch": {
+          "type": "integer",
+          "default": 50,
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "uraniumResearch": {
+          "type": "integer",
+          "default": 200,
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "cityUpkeepPerTile": {
+          "type": "integer",
+          "default": 23,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "cityAdjacencyDiscount": {
+          "type": "integer",
+          "default": 5,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "workerUpkeep": {
+          "type": "integer",
+          "default": 4,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "cartUpkeep": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "workerCooldown": {
+          "type": "integer",
+          "default": 20,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "cartCooldown": {
+          "type": "integer",
+          "default": 30,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "cityCooldown": {
+          "type": "integer",
+          "default": 100,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "maxRoad": {
+          "type": "integer",
+          "default": 6,
+          "minimum": 0,
+          "maximum": 6
+        },
+        "attempt1Ms": {
+          "type": "integer",
+          "default": 7000,
+          "minimum": 0,
+          "maximum": 60000
+        },
+        "retryMs": {
+          "type": "integer",
+          "default": 3000,
+          "minimum": 0,
+          "maximum": 60000
+        },
+        "turnBudgetMs": {
+          "type": "integer",
+          "default": 11000,
+          "minimum": 1,
+          "maximum": 60000
+        },
+        "turnSpacingMs": {
+          "type": "integer",
+          "default": 6000,
+          "minimum": 0,
+          "maximum": 60000
+        },
+        "wallClockBudgetSeconds": {
+          "type": "integer",
+          "default": 660,
+          "minimum": 1,
+          "maximum": 720
+        },
+        "lobbyJoinTimeoutTicks": {
+          "type": "integer",
+          "default": 2400,
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "startWaitTicks": {
+          "type": "integer",
+          "default": 48,
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "gameOverTicks": {
+          "type": "integer",
+          "default": 72,
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "fastMode": {
+          "type": "boolean",
+          "default": true
+        },
+        "showPlayerLabels": {
+          "type": "boolean",
+          "default": false
+        },
+        "fullyObservable": {
+          "type": "boolean",
+          "default": true
+        },
+        "model": {
+          "type": "string",
+          "default": ""
+        },
+        "maxOutputTokens": {
+          "type": "integer",
+          "default": 900,
+          "minimum": 1,
+          "maximum": 8192
+        }
+      }
+    },
+    "results_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "names",
+        "scores",
+        "win",
+        "reason",
+        "endRule",
+        "cityTiles",
+        "turnsPlayed"
+      ],
+      "properties": {
+        "names": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "string"
+          }
+        },
+        "aliases": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "string"
+          }
+        },
+        "scores": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number"
+          }
+        },
+        "win": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "boolean"
+          }
+        },
+        "winner": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "deadline",
+            "fault"
+          ]
+        },
+        "endRule": {
+          "type": "string",
+          "enum": [
+            "full_time",
+            "eliminated",
+            "wall_clock",
+            "sim_fault",
+            "host_error"
+          ]
+        },
+        "cityTiles": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "units": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "fuel": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "research": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "cityTilesBuilt": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "cityTilesLost": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "unitsBuilt": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "unitsLost": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "resourcesMined": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        "nightsSurvived": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "blockedMoves": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "turnsPlayed": {
+          "type": "integer"
+        },
+        "mapSize": {
+          "type": "integer"
+        },
+        "seed": {
+          "type": "integer"
+        },
+        "policyKinds": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "string"
+          }
+        },
+        "llmTurns": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "fallbackTurns": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "directivesRejected": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer"
+          }
+        },
+        "deadSeats": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "boolean"
+          }
+        },
+        "stopDetail": {
+          "type": "string"
+        }
+      }
+    },
+    "protocols": {
+      "player": {
+        "type": "text",
+        "value": "The seat websocket is ws://<host>:<port>/player?slot=<i>&token=<t>; a bad slot or\ntoken is a 403. A seat sends exactly ONE thing that matters: a Sprite v1 chat\nmessage (0x81) carrying its registration,\n\n  {\"type\":\"register\",\"policy\":\"<label, <=64 runes>\",\n   \"prompt\":\"<PLAYER_PROMPT or empty, <=4000 runes>\",\n   \"scripted\":\"forester\"|\"prospector\"|null}\n\nre-sent over the first few seconds of received frames, because joins are\nslot-sequential and a seat whose slot is not the next open one is not admitted\nuntil the lower slot has joined. The server consumes it as registration, writes\na REDACTED `register` record (policy label and kind, never the prompt) and never\napplies it as a bubble.\n\nA SEAT SENDS NO INPUTS. fastMode is true and the server computes every action\nfrom the seat's directive, so the seat only sends the Sprite v1 Ready packet\n(0x85) after each received frame and otherwise receives. This game has NO\ninter-seat channel: any other chat text from a seat is dropped.\n\nThe frame a seat receives is the same sprite-protocol stream a spectator gets.\nA seat's OBSERVATION is not on the socket at all: the LLM call is made by the\nGAME container, which builds the observation server-side, so a seat container\nnever sees game state and never needs an API key.\n\nA seat that never registers, or registers with neither field, is\nscripted \"forester\". A seat that never connects does not end the episode: the\nlobby timeout expires, the no-show is reported once to\nCOGAME_PLAYER_FAILURE_URI with exactly {\"message\",\"failed_policy_index\"}, its\nside plays forester for the whole episode, and all 360 turns run."
+      },
+      "global": {
+        "type": "text",
+        "value": "The spectator websocket is ws://<host>:<port>/global (player credentials 403).\nIt carries the bitworld sprite protocol: the baked island as one sprite, per-cell\nresource / road / city objects, one chip object per unit, and the broadcast\nchrome JSON on the LABEL of reserved sprite id 4090.\n\nThe state JSON, one object per presentation frame, identical live and in replay,\nis the only thing the renderer reads. Inherited keys: t, mt, ph, lob, sp, mx, st,\nlp, sk, ff, en, mm, bs, teams, roster, events, lead, lulls, beats. lux-ai adds\nturn, turns, cycle, cycles, night, nightTurn, nightTurns, dayLength, size, res,\ncoalAt, uraniumAt, terrain (delta: [{i,k,a}]), roads (delta: [{i,l}]), cities\n([{id,seat,fuel,upkeep,tiles}]), units ([{u,seat,k,i,w,c,r,cd}]), score and dir.\nroster[].name is the seat's REAL policy name (spectator side only);\nroster[].alias is the anonymous in-game name a seat itself sees.\n\nEleven derived event kinds: phase, dawn, dusk, citybuilt, citylost, unitbuilt,\nunitlost, research, depleted, directive, end.\n\nFour scrubber beat kinds, all bounded by construction: dusk (<=9), research\n(<=4), citylost (throttled to one per seat per night, <=18) and end (1) \u2014 at\nmost 32 markers on a 360-turn scrubber, each a labelled clickable button.\n\nReplay records: `register`, `directive`, `fallback`, `budget_guard`, `stop` and\n`result` as chat records; the 13 structured directive bytes, the game start and\nthe wall-clock stop as INPUT records, which are load-bearing and re-applied\nbefore the turn they belong to is stepped."
+      }
+    },
+    "docs": {
+      "readme": {
+        "type": "text",
+        "value": "# cogame-lux-ai\n\n**A two-seat, zero-sum economy RTS at board-game tempo** \u2014 a port of the\n[Lux AI Challenge Season 1](https://github.com/Lux-AI-Challenge/Lux-Design-S1)\nrules onto a 16 \u00d7 16 mirrored island.\n\nTwo sides gather wood, coal and uranium, spend research to unlock the better\nfuels, grow cities out of city tiles, and **every ten turns the sun goes down\nand each city must pay its light bill or die on the spot**. Most city tiles\nstanding at turn 360 wins.\n\nA policy is just a prompt. Every ten turns the game server asks each side's\nmodel for **one strategy object** \u2014 a stance, a mining priority, a research\ntarget, what city tiles should build, worker and cart targets, a focus cell and\na night policy \u2014 and a deterministic controller executes it for the next ten\nturns, moving every unit and telling every tile what to do. The model plays the\nlayer that decides games; the controller plays the layer that code does better.\n\n- The board is a **fixed 16 \u00d7 16 grid** and the whole island is always in frame.\n- The map is **generated from the episode seed and perfectly mirror-symmetric**,\n  so neither side can be dealt a better island.\n- The game is **fully observable**: both sides see the entire board, both\n  research counts and every resource amount. What is hidden is the opponent's\n  *plan*, never the board.\n- `scores[0] + scores[1] == 1.0` on **every** episode \u2014 a strict zero-sum duel.\n\nRead the rules in [`docs/RULES.md`](docs/RULES.md), the wire protocol in\n[`docs/PROTOCOL.md`](docs/PROTOCOL.md), and how to write a prompt that plays\nwell in [`docs/COMMANDING.md`](docs/COMMANDING.md). The full design note is\n[`docs/plans/2026-08-27-lux-ai-design.md`](docs/plans/2026-08-27-lux-ai-design.md).\n\n## Policies\n\nOne image, two entrypoints, four policies switched entirely by environment:\n\n| policy | env | what it is |\n|---|---|---|\n| `lux-ai-lumberjack` | `PLAYER_PROMPT=\u2026` | champion #1 \u2014 wood first, cities second, research only when the wood tells you to |\n| `lux-ai-nightwatch` | `PLAYER_PROMPT=\u2026` | champion #2 \u2014 win the second half; cheap fuel loses to dense fuel |\n| `lux-ai-forester` | `PLAYER_SCRIPTED=forester` | the published scripted default, the per-turn LLM fallback and the certification player |\n| `lux-ai-prospector` | `PLAYER_SCRIPTED=prospector` | the control: buys the fuel ladder early and pays for it in tiles |\n\nThe two champion prompts are in\n[`scripts/champion_prompts.json`](scripts/champion_prompts.json) and in\n[`tools/ci/policies.json`](tools/ci/policies.json). **The LLM call is made by the\nGAME container**, not by the player pod \u2014 that is where the coworld secret is\ninjected \u2014 so no policy needs a Bedrock flag.\n\n## Layout\n\n```\nsrc/lux_ai.nim              the game entrypoint (/bin/lux-ai)\nsrc/lux_ai_player.nim       the thin seat registrar (/bin/lux-ai-player)\nsrc/lux/                    the sim, the decision layer, the server\n  board units cities resolve scoring     the rules, pure integer\n  micro directives baselines             directive -> actions, the two fillers\n  llm decide                             the parallel batch and its fallbacks\n  sim sim_state sim_config sim_types     the step loop and the hash chain\n  replays replay_runtime broadcast global server wire_constants roster\nclient/                     the broadcast page (see below)\nreplay-viewer/              the emscripten wasm entry + the static shell\nscripts/                    the art pipeline and the reproducible page fork\ntools/                      the build hook, the tuner, the forensics\ntests/                      the Nim tests ci.yml runs in debug AND release\n```\n\n## The viewer is a static wasm bundle, never a pod\n\n`tools/build_replay_viewer.sh` (the `coworld build` hook) compiles\n`replay-viewer/lux_replay.nim` \u2014 which imports **the same `src/lux/sim.nim` the\nserver runs** \u2014 to WebAssembly through the pinned `emscripten/emsdk` container,\nand bundles it with the broadcast page. In the browser the module re-simulates\nevery turn from the recorded directives and compares its own `gameHash` against\nthe recorded one **every tick**; a single divergent bit surfaces as a warning at\nthe tick it happens.\n\n`client/chrome_common.js` and `client/broadcast_core.js` are **byte-for-byte**\ncoworld-ctf's. `client/replay_broadcast.html` is coworld-ctf's page with exactly\nthe deletions the design note names and one appended game block;\n`scripts/fork_broadcast_page.py` reproduces that fork from the starter mount, so\nthe diff is reviewable rather than asserted.\n\n## Art\n\nBoard and tile art is baked at load by pixie from the starter's shipped assets\n(`data/arena_floor.png` tiled and darkened with a chalk grid, resource chips and\ncity roofs textured from crops of the starter's wall JPEGs, tinted through\n`data/pallete.png`). The **unit sprites are nano-banana renders of the Softmax\ncog, one kit per role**: a worker is tall and narrow with a raised axe, a cart is\na squat armless wagon heaped with logs and coal, so the two roles read apart at\nboard scale with no label at all. The source sheet is\n`scripts/art/source/cogs_sheet.png` and the splitter is\n`scripts/art/split_cog_sheet.py`; the derived PNGs are committed because CI does\nnot regenerate art.\n\n## Building and testing\n\nThe sandbox that wrote this repo has no Docker, no Nim and no emsdk: **CI is the\nharness.** `.github/workflows/ci.yml` runs every `tests/*.nim` twice (debug for\nrange and overflow checks, release for codegen), builds the production image and\nplays one real episode in raw Docker from the certification fixture, then builds\nthe wasm bundle and opens it in headless chromium against **that episode's own\nreplay**.\n\nLocally, with a Nim 2.2.4 toolchain and the pinned dependency tree:\n\n```bash\nnimby --global sync nimby.lock\nnim r --path:src tests/tests.nim\nnim c -d:release --out:lux-ai src/lux_ai.nim\n```\n\n## Releasing\n\n`.github/workflows/coworld-release.yml` (dispatch only) runs\nbuild \u2192 certify \u2192 upload-policies \u2192 upload-coworld \u2192 secret put, in that order,\nand writes `release-result.json` as the `release-result` artifact.\n`.github/workflows/coworld-submit.yml` submits one policy as one player.\n"
+      },
+      "pages": [
+        {
+          "id": "rules.md",
+          "title": "Rules",
+          "content": {
+            "type": "text",
+            "value": "# lux-ai \u2014 the rules\n\nA port of the **Lux AI Challenge Season 1** rules onto a 16 x 16 mirrored grid.\nTwo sides gather wood, coal and uranium, spend research to unlock the better\nfuels, grow cities out of city tiles, and every ten turns the sun goes down and\neach city must pay its light bill or die on the spot. **Most city tiles standing\nat turn 360 wins.**\n\n## The clock\n\n- One tick is one Lux turn. `maxTurns` is **360** (`duel`, `scarcity`) or\n  **200** (`skirmish`).\n- A **cycle** is `cycleLength` **40** turns: `turn mod 40 < 30` is **day**,\n  `turn mod 40 >= 30` is **night**. Nine full cycles in 360 turns.\n- A **directive turn** is every `directiveEvery` = **10** turns, beginning at\n  turn 0: 36 directive turns per episode. Ten divides the 30/10 cycle exactly,\n  so a seat is always asked for a new directive **on the turn the sun sets**.\n\n## The board\n\n`mapSize` is even and is 16 in the default variant. The map is generated from\nthe episode seed and is **perfectly mirror-symmetric** about the vertical\nmidline; seat 0 owns the left half, seat 1 the right. Symmetry is the integrity\npin: neither side can be dealt a better island.\n\n## The turn, in order\n\nEvery turn runs these steps and nothing else mutates the world. An action that\nis illegal at the moment it is evaluated is **discarded and costs no cooldown**.\n\n1. **Directive install** (directive turns only).\n2. **Order compilation** \u2014 the deterministic micro layer emits at most one\n   action per unit and per city tile whose `cooldownTenths == 0`.\n3. **City-tile actions**, ascending tile index, seat 0 then seat 1:\n   `research` (+1 point), `build_worker` / `build_cart` (only while\n   `units < cityTiles`). Any accepted action costs the tile 100 cooldown tenths.\n4. **Transfers**, ascending giver unit id, to an orthogonally adjacent unit of\n   the same team.\n5. **City building**, ascending unit id. A worker on `empty` terrain with no\n   city tile and `wood + coal + uranium >= 100` spends exactly 100 resource\n   units cheapest-first and plants a tile. Two opposing workers on one cell:\n   neither builds. Two friendly: the lower unit id builds. The new tile merges\n   into the lowest adjacent same-team city id, fuels summing; road level 6.\n6. **Movement** \u2014 illegal targets discarded; a monotone blocking-and-contention\n   **fixed point** decides who actually moves; survivors apply simultaneously;\n   a cart paves the empty cell it lands on.\n7. **Resource collection** \u2014 only workers, wood then coal then uranium, over\n   every tile of that kind in ascending index. Rates 20 / 5 / 2 per adjacent\n   worker per tile; when a tile cannot pay everyone, the amount is split evenly\n   with the first `amount mod |M|` workers taking one extra. Coal needs 50\n   research points, uranium 200.\n8. **Deposit** \u2014 every unit on a friendly city tile empties its whole cargo into\n   that city at 1 / 10 / 40 fuel per unit, every turn, day and night.\n9. **Night burn** (night turns only). Cities first: `upkeep = 23 * tiles -\n   5 * adjacentPairs`; a city that cannot pay is **destroyed entirely**. Units\n   second: a unit on a surviving friendly city tile pays nothing, every other\n   unit burns 4 (worker) or 10 (cart) fuel from its own cargo, and one that\n   cannot pay dies.\n10. **Cooldowns** \u2014 `cooldownTenths -= 10 + 2 * road`; city tiles -10.\n11. **Wood regrowth** \u2014 every wood tile with `0 < amount < 500` grows by\n    `max(1, amount div 50)`. A tile mined to exactly 0 **never comes back**.\n12. **Sim guard** \u2014 `checkLuxInvariants()`.\n13. **Hash and end check**.\n\n## Winning\n\nMeasured at the final turn, first difference decides: more city tiles, then more\nunits, then more banked fuel, else a tie. The league score is the match point:\n1.0 / 0.5 / 0.0, and `scores[0] + scores[1] == 1.0` on every episode.\n\n## Documented divergences from `Lux-Design-S1`\n\nThis is an adaptation of a public specification, not a reproduction of the\nJavaScript engine. No test compares a trajectory to a reference implementation.\n\n| lux-ai | Lux S1 |\n|---|---|\n| a new seeded mirror-symmetric map generator | S1's procedural generator |\n| integer wood regrowth `+max(1, amount div 50)` | x1.02 per turn |\n| cooldown in **tenths**, recovery `10 + 2 x road` | fractional `1 + 0.2 x road` |\n| map sizes 12 and 16 only | S1 also rolls 24 and 32 |\n| **no pillage** | workers may destroy roads |\n| a directive every 10 turns compiled by a deterministic micro layer | per-unit orders every turn |\n\n## Two amendments to the design note's own rule order\n\nBoth are recorded here because they change how a game plays, and both exist\nbecause the literal reading produces a dead game:\n\n1. **Production before research.** The design note orders the city-tile rules\n   research-first. S1's unit cap (`units < cityTiles`) makes that\n   self-defeating at the opening: a side with one tile and one worker spends\n   every tile action of the first hundred turns on research points and starves,\n   because a research point does not mine wood and the night bill does not wait.\n   Research therefore YIELDS while the side is both under the unit cap and below\n   its directive's unit target \u2014 the exact trade the system prompt describes to\n   the model.\n2. **`prospector` carries `forester`'s night guard, and plants a seed blob\n   first.** The note's `prospector` researches to 200 before it expands; with\n   one city tile earning one point every ten turns that is 2000 turns, so it\n   never moves. It now expands to `prospectorSeedTiles` tiles first and, like\n   `forester`, drops to `stance: \"fuel\"` whenever one of its cities is inside\n   `foresterFuelNights` nights of starving. Without the guard it is wiped out in\n   night 1 on most seeds, which is a dead filler rather than a control.\n\n## The scripted baselines\n\n**`forester`** (`PLAYER_SCRIPTED=forester`) \u2014 the certification player, the\nper-turn LLM fallback, the driver of a no-show seat, and the published default.\nWood until coal is researched, expand unless a city is inside\n`foresterFuelNights` nights of starving.\n\n**`prospector`** (`PLAYER_SCRIPTED=prospector`) \u2014 the second filler,\ndeliberately different in shape: it buys the fuel ladder early and pays for it\nin tiles. `forester` beats it at the pinned seed, which is a real bar for a\nchampion to clear.\n\nBoth emit the same directive object an LLM does, through the same validator,\nand neither ever writes a `note`. Their tuned numbers are the pick from\n`tools/tune_baselines.nim`, pinned in `tools/ci/baseline_tuning.json`.\n"
+          }
+        },
+        {
+          "id": "protocol.md",
+          "title": "Wire protocol",
+          "content": {
+            "type": "text",
+            "value": "# lux-ai \u2014 wire protocol\n\n## The runtime contract\n\nIn: `COGAME_CONFIG_URI`. Out: `COGAME_RESULTS_URI`, `COGAME_SAVE_REPLAY_URI`,\n`COGAME_PLAYER_FAILURE_URI`, `COGAME_EVENTS_URI`, `COGAME_METRICS_URI`.\n`COGAME_LOAD_REPLAY_URI` + `/client/replay` drive local replay mode.\n`COGAME_HOST` / `COGAME_PORT` bind the server.\n\n## The player socket\n\n`ws://<host>:<port>/player?slot=<i>&token=<t>` \u2014 a bad slot or token is a 403.\n\nA seat sends exactly ONE thing that matters: a Sprite v1 chat message (`0x81`)\ncarrying its registration.\n\n```json\n{\"type\":\"register\",\"policy\":\"<label, <=64 runes>\",\n \"prompt\":\"<PLAYER_PROMPT or empty, <=4000 runes>\",\n \"scripted\":\"forester\"|\"prospector\"|null}\n```\n\nIt is re-sent over the first few seconds of received frames, because joins are\nslot-sequential and a seat whose slot is not the next open one is not admitted\nuntil the lower slot has joined. The server consumes it as registration, writes\na REDACTED `register` record (policy label and kind, never the prompt) and never\napplies it as a bubble.\n\n**A seat sends no inputs.** `fastMode` is true and the server computes every\naction from the seat's directive, so the seat only sends the Sprite v1 Ready\npacket (`0x85`) after each received frame and otherwise receives. **This game\nhas no inter-seat channel**: any other chat text from a seat is dropped.\n\nA seat that never registers, or registers with neither field, is\n`scripted: \"forester\"`. A seat that never connects does not end the episode: the\nlobby timeout expires, the no-show is reported once to\n`COGAME_PLAYER_FAILURE_URI` with the platform's closed payload (exactly\n`{\"message\",\"failed_policy_index\"}`, lowest missing slot only), its side plays\n`forester` for the whole episode, and all 360 turns run.\n\n## The spectator socket\n\n`ws://<host>:<port>/global` \u2014 no player credentials (they 403). It carries the\nbitworld sprite protocol: the baked island as one sprite, per-cell resource,\nroad and city objects, one chip object per unit, and the broadcast chrome JSON\non the LABEL of reserved sprite id 4090.\n\n### The state JSON\n\nOne object per presentation frame, identical live and in replay, and the only\nthing the renderer reads. The inherited keys (`t`, `mt`, `ph`, `lob`, `sp`,\n`mx`, `st`, `lp`, `sk`, `ff`, `en`, `mm`, `bs`, `teams`, `roster`, `events`,\n`lead`, `lulls`, `beats`) are unchanged. lux-ai adds:\n\n```json\n{\"turn\": 214, \"turns\": 360, \"cycle\": 5, \"night\": true, \"nightTurn\": 4,\n \"nightTurns\": 10, \"size\": 16, \"res\": [212, 54], \"coalAt\": 50, \"uraniumAt\": 200,\n \"terrain\": [{\"i\": 37, \"k\": \"wood\", \"a\": 288}],\n \"roads\":   [{\"i\": 84, \"l\": 3}],\n \"cities\":  [{\"id\": 0, \"seat\": 0, \"fuel\": 906, \"upkeep\": 95, \"tiles\": [71, 72]}],\n \"units\":   [{\"u\": 3, \"seat\": 0, \"k\": \"worker\", \"i\": 70, \"w\": 60, \"c\": 0,\n              \"r\": 0, \"cd\": 0}],\n \"score\":   {\"cityTiles\": [7, 6], \"units\": [6, 7], \"fuel\": [967, 1402],\n             \"leader\": 0},\n \"dir\":     [{\"seat\": 0, \"alias\": \"RED-alpha\", \"turn\": 210, \"stance\": \"expand\",\n              \"source\": \"llm\", \"note\": \"coal belt at column 3\"}]}\n```\n\n`terrain` and `roads` are DELTAS (full arrays on the first frame and after any\nseek). `i` is always a cell index. `roster[].name` is the seat's REAL policy\nname (spectator side); `roster[].alias` is the anonymous in-game name.\n\n### The eleven derived event kinds\n\n`phase` `{to}`; `dawn` `{cycle}`; `dusk` `{cycle, fuel[2], cityTiles[2]}`;\n`citybuilt` `{seat, cell, cityId, tiles}`; `citylost` `{seat, cityId, tiles,\ncell}`; `unitbuilt` `{seat, kind, cell}`; `unitlost` `{seat, kind, cell,\ncause}`; `research` `{seat, kind, points}`; `depleted` `{kind, cell}`;\n`directive` `{seat, stance, note}`; `end` `{reason, endRule, cityTiles, winner}`.\n\n### The four beat kinds\n\n`dusk` (<= 9), `research` (<= 4), `citylost` (throttled to one per seat per\nnight, <= 18) and `end` (1) \u2014 at most 32 markers on a 360-turn scrubber. Every\none is a labelled, clickable button that seeks on click.\n\n## The replay\n\nBinary `COWLDLUX`. `tools/replay_summary.py` turns it into one strict-UTF-8\nJSON object with Python 3 stdlib only.\n\n| content | carries |\n|---|---|\n| header | magic `COWLDLUX`, format version, game name `lux-ai`, game version |\n| config JSON | seed, num_agents, mapSize, cluster counts and start amounts, every rule constant, `players[].name` (REAL names), slots, fastMode, fullyObservable |\n| joins | per seat: name, slot, token |\n| input records | `start`, per directive turn per seat the **13 structured bytes**, and the wall-clock `stop` \u2014 this game's entire input log, load-bearing, applied before the turn is stepped |\n| chats | `register` / `directive` / `fallback` / `budget_guard` / `stop` / `result` |\n| hashes | one `gameHash` per tick \u2014 the integrity chain the viewer checks |\n\nThe map is RE-DERIVED from the seed rather than recorded: it is in `gameHash`\nfrom turn 0, so a divergence surfaces immediately.\n\n## The HTTP routes\n\n`GET /healthz`; `GET /client/player?slot=&token=` (token-checked, and it opens\nNO socket \u2014 it is the platform's contract probe); `GET /client/global` and\n`GET /client/replay` (the broadcast page); `GET /replay-data`. All of them keep\nanswering for a bounded ~20 s grace after the artifacts are written.\n"
+          }
+        },
+        {
+          "id": "commanding.md",
+          "title": "Writing a Lux directive prompt",
+          "content": {
+            "type": "text",
+            "value": "# Writing a Lux directive prompt\n\nA policy is just a prompt. Your prompt is pasted under a\n\"GUIDANCE FROM YOUR OPERATOR\" heading in front of a JSON observation, every ten\nturns, and the model's reply is one strategy object. A deterministic controller\nexecutes that object for the next ten turns: it assigns every worker to the best\ntile of your chosen resource, walks them home to deposit, plants city tiles when\nthey are full, drives your carts and tells your city tiles what to build.\n\n**You never move units.** Write strategy, not micro.\n\n## What you are choosing\n\n```json\n{\"stance\":\"expand|fuel|research|contest|turtle\",\n \"mine\":[\"wood\",\"coal\",\"uranium\"],\n \"research\":\"none|coal|uranium|always\",\n \"build\":\"auto|city|worker|cart\",\n \"workers\":6, \"carts\":1,\n \"focus\":[x,y] or null,\n \"night\":\"shelter|mine|haul\",\n \"note\":\"<=160 chars, spectators only\"}\n```\n\n- `stance` **expand** plants tiles near your cities and near `focus`;\n  **fuel** walks full workers home instead; **research** is `fuel` plus city\n  tiles that keep researching; **contest** plants next to the resource tiles\n  nearest the opponent; **turtle** hauls everything into your largest city.\n- `mine` is the ORDER your workers prefer, not a filter.\n- `focus` is where the expansion effort aims. Null lets the micro pick.\n- `note` is the only thing you say. It reaches the match feed and the replay and\n  the other side NEVER sees it.\n\n## The three things that decide games\n\n1. **The night bill.** Each city pays `23 x tiles - 5 x touching pairs` EVERY\n   night turn, ten turns a night. A city that cannot pay is destroyed entirely,\n   every tile, that instant. Read `turns_of_fuel` and `survives_tonight` for\n   every city in `city_list` before anything else.\n2. **Compactness.** Nine tiles in a 3x3 block pay 147 a turn; nine separate\n   tiles pay 207. Setting `focus` next to your largest city is worth more than\n   any other single field.\n3. **The research trade.** A city tile spends its whole turn to earn ONE\n   research point, so research literally costs you workers. Coal at 50 points is\n   ten wood per unit and usually pays; uranium at 200 is six cycles of a tile\n   doing nothing.\n\n## What a good prompt looks like\n\n- Give the model a **cycle-1 opening** in concrete field values.\n- Give it a **trigger** it can read off the observation\n  (\"if any city shows `survives_tonight` false, switch to `fuel`\").\n- Give it a **stopping rule** for research.\n- Tell it what to do when it is behind.\n\nBoth shipped champions do all four; read them in\n`scripts/champion_prompts.json` and in the design note's Decisions section.\n\n## What the observation gives you\n\nThree ASCII layers (terrain, cities, units) of exactly `mapSize` lines, a\n`resources` block per kind with `tiles_left` / `amount_left` / `yours` /\n`theirs` / `researched` and the six richest tiles, a `yours` block with your\nresearch, tile and unit counts, cargo, and a per-city list carrying\n`upkeep_per_night_turn`, `survives_tonight` and `turns_of_fuel`, the same public\nblock for the opponent, the standing, your last directive, and a one-line\n`how_it_went` the engine writes.\n\nLux Season 1 is FULLY OBSERVABLE and so is this port. Hidden from you: the\nopponent's directive and note (ever), every prompt, the seed, and any seat's\nfallback statistics.\n"
+          }
+        }
+      ]
+    }
+  },
+  "player": [
+    {
+      "id": "forester",
+      "type": "player",
+      "name": "lux-ai-forester",
+      "description": "The published scripted default: wood until coal is researched, expand unless a city is inside sixteen nights of starving. Also the per-turn LLM fallback and the driver of a no-show seat.",
+      "image": "{{LUX_AI_IMAGE}}",
+      "run": [
+        "/bin/lux-ai-player"
+      ],
+      "source_url": "https://github.com/Metta-AI/cogame-lux-ai/tree/main",
+      "env": {
+        "PLAYER_SCRIPTED": "forester",
+        "PLAYER_POLICY_LABEL": "lux-ai-forester"
+      },
+      "resources": {
+        "requests": {
+          "cpu": "200m",
+          "memory": "128Mi"
+        },
+        "limits": {
+          "cpu": "1"
+        }
+      }
+    },
+    {
+      "id": "prospector",
+      "type": "player",
+      "name": "lux-ai-prospector",
+      "description": "The control: it buys the fuel ladder early and pays for it in city tiles. Deliberately a different SHAPE from forester so the ladder gets a spread rather than two versions of one bot.",
+      "image": "{{LUX_AI_IMAGE}}",
+      "run": [
+        "/bin/lux-ai-player"
+      ],
+      "source_url": "https://github.com/Metta-AI/cogame-lux-ai/tree/main",
+      "env": {
+        "PLAYER_SCRIPTED": "prospector",
+        "PLAYER_POLICY_LABEL": "lux-ai-prospector"
+      },
+      "resources": {
+        "requests": {
+          "cpu": "200m",
+          "memory": "128Mi"
+        },
+        "limits": {
+          "cpu": "1"
+        }
+      }
+    }
+  ],
+  "variants": [
+    {
+      "id": "duel",
+      "name": "Lux duel (16x16, 360 turns)",
+      "description": "Lux AI Season 1 on a seeded, mirror-symmetric 16x16 island: nine day/night cycles, wood-coal-uranium, research gates at 50 and 200, most city tiles standing at turn 360 wins.",
+      "game_config": {
+        "players": [
+          {
+            "name": "Red"
+          },
+          {
+            "name": "Blue"
+          }
+        ],
+        "num_agents": 2,
+        "minPlayers": 2,
+        "teams": 2,
+        "cogsPerTeam": 1,
+        "mapSize": 16,
+        "woodClusters": 4,
+        "coalClusters": 2,
+        "uraniumClusters": 1,
+        "woodStart": 300,
+        "coalStart": 400,
+        "uraniumStart": 325,
+        "maxTurns": 360,
+        "cycleLength": 40,
+        "dayLength": 30,
+        "directiveEvery": 10,
+        "attempt1Ms": 7000,
+        "retryMs": 3000,
+        "turnBudgetMs": 11000,
+        "turnSpacingMs": 6000,
+        "wallClockBudgetSeconds": 660,
+        "lobbyJoinTimeoutTicks": 2400,
+        "startWaitTicks": 48,
+        "gameOverTicks": 72,
+        "fastMode": true,
+        "showPlayerLabels": false,
+        "fullyObservable": true,
+        "seed": 1734029581
+      }
+    },
+    {
+      "id": "skirmish",
+      "name": "Skirmish (12x12, 200 turns)",
+      "description": "A tighter island and five cycles instead of nine: less room to expand, and every research point costs a worker you badly need.",
+      "game_config": {
+        "players": [
+          {
+            "name": "Red"
+          },
+          {
+            "name": "Blue"
+          }
+        ],
+        "num_agents": 2,
+        "minPlayers": 2,
+        "teams": 2,
+        "cogsPerTeam": 1,
+        "mapSize": 12,
+        "woodClusters": 3,
+        "coalClusters": 1,
+        "uraniumClusters": 1,
+        "woodStart": 300,
+        "coalStart": 400,
+        "uraniumStart": 325,
+        "maxTurns": 200,
+        "cycleLength": 40,
+        "dayLength": 30,
+        "directiveEvery": 10,
+        "attempt1Ms": 7000,
+        "retryMs": 3000,
+        "turnBudgetMs": 11000,
+        "turnSpacingMs": 6000,
+        "wallClockBudgetSeconds": 660,
+        "lobbyJoinTimeoutTicks": 2400,
+        "startWaitTicks": 48,
+        "gameOverTicks": 72,
+        "fastMode": true,
+        "showPlayerLabels": false,
+        "fullyObservable": true,
+        "seed": 1734029581
+      }
+    },
+    {
+      "id": "scarcity",
+      "name": "Scarcity (16x16, thin wood, rich rock)",
+      "description": "Half the wood, more coal and twice the uranium: the wood runs out around turn 200, so a side that never bought the research ladder loses its cities in the sixth night.",
+      "game_config": {
+        "players": [
+          {
+            "name": "Red"
+          },
+          {
+            "name": "Blue"
+          }
+        ],
+        "num_agents": 2,
+        "minPlayers": 2,
+        "teams": 2,
+        "cogsPerTeam": 1,
+        "mapSize": 16,
+        "woodClusters": 2,
+        "coalClusters": 3,
+        "uraniumClusters": 2,
+        "woodStart": 200,
+        "coalStart": 400,
+        "uraniumStart": 325,
+        "maxTurns": 360,
+        "cycleLength": 40,
+        "dayLength": 30,
+        "directiveEvery": 10,
+        "attempt1Ms": 7000,
+        "retryMs": 3000,
+        "turnBudgetMs": 11000,
+        "turnSpacingMs": 6000,
+        "wallClockBudgetSeconds": 660,
+        "lobbyJoinTimeoutTicks": 2400,
+        "startWaitTicks": 48,
+        "gameOverTicks": 72,
+        "fastMode": true,
+        "showPlayerLabels": false,
+        "fullyObservable": true,
+        "seed": 1734029581
+      }
+    }
+  ],
+  "certification": {
+    "players": [
+      {
+        "player_id": "forester"
+      },
+      {
+        "player_id": "prospector"
+      }
+    ],
+    "game_config": {
+      "players": [
+        {
+          "name": "Red"
+        },
+        {
+          "name": "Blue"
+        }
+      ],
+      "num_agents": 2,
+      "minPlayers": 2,
+      "teams": 2,
+      "cogsPerTeam": 1,
+      "mapSize": 16,
+      "woodClusters": 4,
+      "coalClusters": 2,
+      "uraniumClusters": 1,
+      "woodStart": 300,
+      "coalStart": 400,
+      "uraniumStart": 325,
+      "maxTurns": 360,
+      "cycleLength": 40,
+      "dayLength": 30,
+      "directiveEvery": 10,
+      "attempt1Ms": 7000,
+      "retryMs": 3000,
+      "turnBudgetMs": 11000,
+      "turnSpacingMs": 0,
+      "wallClockBudgetSeconds": 240,
+      "lobbyJoinTimeoutTicks": 600,
+      "startWaitTicks": 48,
+      "gameOverTicks": 72,
+      "fastMode": true,
+      "showPlayerLabels": false,
+      "fullyObservable": true,
+      "seed": 42
+    }
+  }
+}
