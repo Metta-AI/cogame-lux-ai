@@ -36,13 +36,26 @@ suite "lux engine":
     check config.turnBudgetMs == 11000
     check config.turnSpacingMs == 6000
     check config.wallClockBudgetSeconds == 660
-    ## 36 directive turns x max(spacing 6 s, budget 11 s) = 396 s absolute worst
     let directiveTurns = (config.maxTurns + config.directiveEvery - 1) div
       config.directiveEvery
     check directiveTurns == 36
-    let worst = directiveTurns * max(config.turnSpacingMs, config.turnBudgetMs)
+    ## The worst per-turn wall clock is the CODE's, not the note's 11 s:
+    ## `turnStart` is taken at the top of `decide.turn`, the rate-floor sleep
+    ## of up to turnSpacingMs happens AFTER it, and the budget is checked
+    ## BEFORE each attempt rather than bounding the attempt. So the longest a
+    ## turn can run is 6 s of spacing + one 7 s attempt-1 timeout = 13 s, and
+    ## then the check fires, records the timeout and breaks.
+    let worstTurnMs = config.turnSpacingMs + config.attempt1Ms
+    check worstTurnMs == 13000
+    check worstTurnMs > config.turnBudgetMs
+    let worst = directiveTurns * worstTurnMs
+    check worst div 1000 == 468
+    ## + 3 s of sim + the 100 s lobby cap + 20 s of artifact writing.
     check worst div 1000 + 3 + 100 + 20 < config.wallClockBudgetSeconds
-    check config.wallClockBudgetSeconds <= 720
+    ## The wall-clock stop is checked at the TOP of the server loop, so the
+    ## episode can overshoot its own budget by one more worst-case turn and
+    ## must STILL land inside 60 % of episodeTimeoutSeconds (720 s of 1200).
+    check config.wallClockBudgetSeconds + worstTurnMs div 1000 <= 720
 
   test "with no credentials every directive turn is a recorded fallback, and 360 turns still run":
     ## The engine is constructed with no key in the environment, so the client
