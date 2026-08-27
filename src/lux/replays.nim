@@ -337,6 +337,12 @@ proc runScan(player: var ReplayPlayer) =
         kind: "end", seat: sim.outcome.winner,
         label: beatLabel("end", sim.outcome.winner, sim.world.turn, 0)))
       break
+  ## The scan IS a whole-episode integrity walk, so carry its verdict onto the
+  ## player: a divergent tick then lights `#mmwarn` at LOAD instead of only
+  ## when presentation playback happens to reach it.
+  if scanner.hashValidationFailed and not player.hashValidationFailed:
+    player.hashValidationFailed = true
+    player.hashMismatchTick = scanner.hashMismatchTick
   if player.startTick < 0:
     player.startTick = 0
   # Lull spans: >= 40 consecutive turns with no beat-worthy event.

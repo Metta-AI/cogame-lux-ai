@@ -203,12 +203,19 @@ suite "lux replay":
       player = initialized.player
       game = initialized.sim
       tracker = initialized.tracker
+    ## The load-time pre-scan walks the WHOLE chain, so the divergence is known
+    ## before the first presentation frame is drawn — #mmwarn is lit at load,
+    ## not when playback happens to reach the tick.
+    check player.hashValidationFailed
+    let scanned = player.hashMismatchTick
+    check scanned >= 0
     player.seekReplay(game, 0)
     while game.tickCount < player.maxTick:
       let before = game.tickCount
       discard advanceReplayFrame(player, game, tracker, [], [])
       if game.tickCount == before:
         break
+    check player.hashMismatchTick == scanned
     check player.hashMismatchTick >= 0
     check player.hashMismatchTick <= player.maxTick
 
