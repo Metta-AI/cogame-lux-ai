@@ -244,6 +244,17 @@ suite "lux viewer":
     check "overflow-wrap: anywhere" in gameBlock
     ## and it is the DIRECTIVE rows that carry the band
     check "'lux-say'" in gameBlock
+    ## `.tiny` needs five lines for the same cap, and must RE-DECLARE the band
+    ## to get them: a custom property is substituted at the computed-value time
+    ## of the element it is declared on, so inheriting `:root`'s already
+    ## resolved value keeps the four-line reserve however many lines
+    ## `--lux-note-lines` is overridden to.
+    let tinyAt = gameBlock.find("#stage.tiny {")
+    check tinyAt >= 0
+    let tiny = gameBlock[tinyAt .. gameBlock.find("}", tinyAt)]
+    checkpoint(tiny)
+    check "--lux-note-lines: 5" in tiny
+    check "--lux-say-band:" in tiny
 
   test "the worst-case fixture feeds a FULL-CAP note and reads it back":
     ## The fixture asserts its own strings are still full length — a quietly

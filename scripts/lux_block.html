@@ -107,8 +107,18 @@
          18 * var(--u));
 }
 /* `.tiny` narrows the feed column to 190 --u, so the same cap needs one more
-   line there (ceil(773 / 168) = 5). */
-#stage.tiny { --lux-note-line: 168; --lux-note-lines: 5; }
+   line there (ceil(773 / 168) = 5). `--lux-say-band` MUST be re-declared here:
+   a custom property is substituted at the computed-value time of the element
+   it is declared on, so the `:root` band is already resolved at four lines by
+   the time `#stage.tiny` overrides `--lux-note-lines`, and the descendants
+   would inherit the four-line reserve. */
+#stage.tiny {
+  --lux-note-line: 168;
+  --lux-note-lines: 5;
+  --lux-say-band:
+    calc(var(--lux-note-lines) * 1.35 * var(--lux-note-size) * var(--u) +
+         18 * var(--u));
+}
 #killfeed,
 #stage.tiny #killfeed {
   /* Reserved whether or not anybody is speaking. */
