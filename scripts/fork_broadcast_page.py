@@ -27,7 +27,11 @@ import sys
 # Each region is a contiguous block whose only consumers are the elements the
 # design note removes.
 DELETE_REGIONS = [
-    (1641, 1703, "the EYES PiP cog-art loader (no per-unit point of view here)"),
+    # 1641-1658 is the EYES prose; 1659-1672 is the COG_BASE path story, which
+    # the LOCKER ROOM also depends on, so 1659-1675 stays and only the
+    # billboard art either side of it goes.
+    (1641, 1658, "the EYES PiP prose (no per-unit point of view here)"),
+    (1676, 1703, "the EYES PiP billboard art and its trim/pose math"),
     (1943, 1955, "the flag icon svg (nothing in Lux can be captured)"),
     (2087, 2116, "ingestFpMap — the FPV tactical-map silhouette"),
     (2117, 2346, "the ctf scorebug internals (squad pips, lives, flags)"),
