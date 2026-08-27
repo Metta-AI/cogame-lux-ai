@@ -42,6 +42,20 @@ type
 
 func cellCount*(world: World): int = world.board.cellCount()
 
+func cargoCap*(world: World, kind: UnitKind): int =
+  ## The CONFIGURED cargo cap. `sim_types.cargoCap` reads the compile-time
+  ## constant, which is only what `defaultGameConfig` SEEDS these fields with:
+  ## `workerCargo` and `cartCargo` are declared settable in the manifest's
+  ## `config_schema`, so every rule has to read them through the config or the
+  ## knob is a lie.
+  if kind == ukWorker: world.config.workerCargo else: world.config.cartCargo
+
+func baseCooldown*(world: World, kind: UnitKind): int =
+  ## The CONFIGURED action cooldown, in tenths — same story as `cargoCap`, for
+  ## `workerCooldown` / `cartCooldown`.
+  if kind == ukWorker: world.config.workerCooldown
+  else: world.config.cartCooldown
+
 func isNight*(world: World, turn: int): bool =
   (turn mod world.config.cycleLength) >= world.config.dayLength
 
@@ -174,7 +188,7 @@ proc checkLuxInvariants*(world: World) =
     if unit.wood < 0 or unit.coal < 0 or unit.uranium < 0:
       raise newException(LuxGuardError,
         "unit " & $unit.id & " carries a negative resource")
-    if unit.totalCargo() > cargoCap(unit.kind):
+    if unit.totalCargo() > cargoCap(world, unit.kind):
       raise newException(LuxGuardError,
         "unit " & $unit.id & " is over its cargo cap")
     inc occupied[unit.cell]

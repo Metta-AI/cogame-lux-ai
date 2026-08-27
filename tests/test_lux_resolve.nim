@@ -384,3 +384,51 @@ suite "lux resolve":
     world.units.list[world.units.indexOfId(giver)].wood = 10
     world.step(TurnOrders(unitActions: @[transfer(giver, far, tWood, 10)]))
     check world.unitById(giver).wood == 10     ## not adjacent: discarded
+
+  test "the configured cargo caps and cooldowns are the ones the rules use":
+    ## `workerCargo`, `cartCargo`, `workerCooldown` and `cartCooldown` are
+    ## declared settable in the manifest's `config_schema`. A rule that reads
+    ## the compile-time constant instead makes the knob a lie: it is echoed
+    ## into the replay config and the schema, and changes nothing.
+    var world = buildWorld()
+    world.clearBoard()
+    world.config.workerCargo = 12
+    world.board.terrain[20] = tWood
+    world.board.amount[20] = 300
+    let miner = world.addUnit(Red, ukWorker, 21, wood = 10)
+    world.step(TurnOrders())
+    check world.unitById(miner).wood == 12       ## the config, not WorkerCargo
+
+    world.clearBoard()
+    world.config.cartCargo = 30
+    let
+      giver = world.addUnit(Red, ukWorker, 40, wood = 60)
+      cart = world.addUnit(Red, ukCart, 41, wood = 25)
+    world.step(TurnOrders(unitActions: @[transfer(giver, cart, tWood, 900)]))
+    check world.unitById(cart).wood == 30        ## the config, not CartCargo
+    check world.unitById(giver).wood == 55
+
+    world.clearBoard()
+    world.config.workerCooldown = 40
+    let slow = world.addUnit(Red, ukWorker, 40)
+    world.step(TurnOrders(unitActions: @[move(slow, dEast)]))
+    check world.unitById(slow).cell == 41
+    check world.unitById(slow).cooldownTenths == 30  ## 40 spent, 10 recovered
+
+    world.clearBoard()
+    world.config.cartCooldown = 15
+    let hauler = world.addUnit(Red, ukCart, 40)
+    world.step(TurnOrders(unitActions: @[move(hauler, dEast)]))
+    check world.unitById(hauler).cell == 41
+    ## 15 spent; the cart paved its target to road 1, so it recovers 12
+    check world.unitById(hauler).cooldownTenths == 3
+
+  test "a city build costs the CONFIGURED worker cooldown":
+    var world = buildWorld()
+    world.clearBoard()
+    world.config.workerCooldown = 40
+    let builder = world.addUnit(Red, ukWorker, 40, wood = 100)
+    world.step(TurnOrders(unitActions: @[buildCity(builder)]))
+    check world.cities.list.len == 1
+    ## 40 spent; the new tile is paved to maxRoad = 6, so it recovers 22
+    check world.unitById(builder).cooldownTenths == 18

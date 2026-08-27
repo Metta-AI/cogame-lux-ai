@@ -312,7 +312,7 @@ proc compileTurn*(
       for other in world.units.list:
         if ord(other.team) != seat or other.kind != ukCart:
           continue
-        if other.freeCargo(cargoCap(ukCart)) <= 0:
+        if other.freeCargo(cargoCap(world, ukCart)) <= 0:
           continue
         var adjacent = false
         for neighbour in world.board.orthogonal(unit.cell):

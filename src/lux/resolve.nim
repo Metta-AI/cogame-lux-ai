@@ -119,14 +119,14 @@ proc applyTransfers(world: var World, orders: TurnOrders) =
     let
       stock = world.units.list[giverIndex].stockOf(action.resource)
       space = world.units.list[receiverIndex].freeCargo(
-        cargoCap(world.units.list[receiverIndex].kind))
+        cargoCap(world, world.units.list[receiverIndex].kind))
       moved = min(action.amount, min(stock, space))
     if moved <= 0:
       continue
     world.units.list[giverIndex].addStock(action.resource, -moved)
     world.units.list[receiverIndex].addStock(action.resource, moved)
     world.units.list[giverIndex].cooldownTenths +=
-      baseCooldown(world.units.list[giverIndex].kind)
+      baseCooldown(world, world.units.list[giverIndex].kind)
 
 proc applyCityBuilds(world: var World, orders: TurnOrders, tick: int) =
   ## Step 5, ascending unit id. A WORKER builds if and only if its cell is
@@ -164,7 +164,9 @@ proc applyCityBuilds(world: var World, orders: TurnOrders, tick: int) =
     if index < 0:
       continue
     discard world.units.list[index].spendCheapestFirst(world.config.cityCost)
-    world.units.list[index].cooldownTenths += 20
+    ## A build is a worker action: it costs the CONFIGURED worker cooldown,
+    ## not a literal that silently disagrees with `workerCooldown`.
+    world.units.list[index].cooldownTenths += baseCooldown(world, ukWorker)
     let team = Team(candidate.team)
     let placed = world.cities.addTile(world.board, team, candidate.cell)
     world.board.road[candidate.cell] = world.config.maxRoad
@@ -263,7 +265,8 @@ proc applyMovement(world: var World, orders: TurnOrders) =
       inc world.blockedMoves[ord(world.units.list[i].team)]
       continue
     world.units.list[i].cell = target[i]
-    world.units.list[i].cooldownTenths += baseCooldown(world.units.list[i].kind)
+    world.units.list[i].cooldownTenths +=
+      baseCooldown(world, world.units.list[i].kind)
     if world.units.list[i].kind == ukCart and
         world.board.terrain[target[i]] == tEmpty:
       world.board.road[target[i]] =
@@ -294,7 +297,7 @@ proc collectResources(world: var World, tick: int) =
           continue
         if world.researchPoints[ord(unit.team)] < gate:
           continue
-        if unit.freeCargo(cargoCap(unit.kind)) <= 0:
+        if unit.freeCargo(cargoCap(world, unit.kind)) <= 0:
           continue
         if unit.cell == cell:
           miners.add(i)
@@ -317,7 +320,7 @@ proc collectResources(world: var World, tick: int) =
           if position < available mod miners.len:
             inc share
         let capped = min(share, world.units.list[index].freeCargo(
-          cargoCap(world.units.list[index].kind)))
+          cargoCap(world, world.units.list[index].kind)))
         if capped <= 0:
           continue
         world.units.list[index].addStock(kind, capped)
