@@ -70,14 +70,18 @@ proc resolveApiKey(): string =
 
 proc bedrockModelIds(): seq[string] =
   ## Bedrock inference-profile candidates, tried in order; BEDROCK_MODEL pins
-  ## one. `us.anthropic.claude-sonnet-4-6` is deliberately NOT a candidate: it
+  ## one. There must be MORE THAN ONE, or `tryNextBedrockModel` can never
+  ## rotate and a single "Model access is denied" disables the client for the
+  ## whole episode instead of falling to the next model.
+  ## `us.anthropic.claude-sonnet-4-6` is deliberately NOT a candidate: it
   ## times out on every sidecar call (cogame-raid round 2, 2026-08-23), and one
   ## haiku throttle then cascades into a whole episode of scripted fallbacks
   ## because the retry burns the turn.
   let pinned = getEnv("BEDROCK_MODEL").strip()
   if pinned.len > 0:
     return @[pinned]
-  @["us.anthropic.claude-haiku-4-5-20251001-v1:0"]
+  @["us.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "us.anthropic.claude-sonnet-4-5-20250929-v1:0"]
 
 proc tryNextBedrockModel(client: LlmClient, why: string): bool =
   if client.transport != ltBedrock or
