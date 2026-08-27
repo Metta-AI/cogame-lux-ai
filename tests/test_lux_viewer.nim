@@ -224,6 +224,44 @@ suite "lux viewer":
     check "#stage.tiny #researchrail .rr" in gameBlock
     check "#stage.tiny #cyclebar .cyc .num" in gameBlock ## 4: numerals dropped
 
+  test "the commander band is sized from the server's own note cap":
+    ## Checklist item 15: text laid out relative to another element gets a
+    ## RESERVED band sized from the cap the server enforces on that string.
+    ## The `note` is the only model-authored string this viewer draws; the
+    ## inherited `.feed-row` is a nowrap row sized for a 10-char NAME, so the
+    ## commander line gets its own wrapping band and the band declares the cap
+    ## it was sized from. Move MaxNoteRunes without resizing the band and this
+    ## fails.
+    check ("--lux-note-runes: " & $MaxNoteRunes & ";") in gameBlock
+    check ".feed-row.lux-say {" in gameBlock
+    let bandAt = gameBlock.find(".feed-row.lux-say {")
+    let band = gameBlock[bandAt .. gameBlock.find("}", bandAt)]
+    checkpoint(band)
+    check "white-space: normal" in band
+    check "min-height: var(--lux-say-band)" in band
+    check "width: 100%" in band
+    ## the wrap survives a 160-rune note with no spaces in it
+    check "overflow-wrap: anywhere" in gameBlock
+    ## and it is the DIRECTIVE rows that carry the band
+    check "'lux-say'" in gameBlock
+
+  test "the worst-case fixture feeds a FULL-CAP note and reads it back":
+    ## The fixture asserts its own strings are still full length — a quietly
+    ## shortened remark leaves it passing while testing nothing — and it does
+    ## the measuring this game needs, because every string it draws is DOM and
+    ## the harness's canvas tally is structurally 0 here.
+    let fixture = readRepoFile("tools/ci/renderer_fixture.html")
+    check ("var NOTE_RUNES = " & $MaxNoteRunes & ";") in fixture
+    check "runeCap(NOTE_A, NOTE_RUNES)" in fixture
+    check "entry.runes !== NOTE_RUNES" in fixture
+    check "getBoundingClientRect" in fixture
+    check "LUX-TEXTFIT " in fixture
+    check "data-replay-error" in fixture
+    ## and ci.yml gates on the measurement rather than merely printing it
+    let workflow = readRepoFile(".github/workflows/ci.yml")
+    check "The commander line fits its band" in workflow
+    check "LUX-TEXTFIT " in workflow
+
   test "no ctf_/CTF_/PB_ identifier survives outside the documented alias":
     for path in ["client/replay_broadcast.html", "client/broadcast_core.js",
                  "replay-viewer/static_replay.js",

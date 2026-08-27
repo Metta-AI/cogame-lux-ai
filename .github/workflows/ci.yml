@@ -390,6 +390,61 @@ jobs:
             --out fixture-out \
             --strict-text-bounds
 
+      # Every string this viewer draws is DOM, not canvas, so the smoke's
+      # `canvas_text` tally above is structurally 0 and --strict-text-bounds
+      # gates NOTHING here. This is the step that gates the text: the fixture
+      # reads each commander line back out of the iframe's DOM, compares its
+      # rune length against the server's MaxNoteRunes cap, and measures every
+      # .feed-row / .badge / .plate box against #stage and the viewport at
+      # 360 / 620 / 1280 px. It prints the whole measurement as one
+      # `LUX-TEXTFIT {json}` console line, which viewer_smoke.mjs copies into
+      # fixture-out/viewer-smoke.json — parsed and asserted here.
+      - name: The commander line fits its band
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+
+          smoke = json.load(open("fixture-out/viewer-smoke.json"))
+          lines = [line for line in smoke["console_tail"] if "LUX-TEXTFIT " in line]
+          if not lines:
+              raise SystemExit(
+                  "::error::the worst-case fixture reported no text-fit "
+                  "measurement (no LUX-TEXTFIT line in viewer-smoke.json). "
+                  "A fixture that measures nothing is not evidence of anything.")
+          fit = json.loads(lines[-1].split("LUX-TEXTFIT ", 1)[1])
+          print("text fit:", json.dumps(
+              {k: v for k, v in fit.items() if k != "detail"}, sort_keys=True))
+          for frame in fit["detail"]:
+              print("  %dpx: stage %s  band %s  %d commander lines, "
+                    "%d runes each" % (
+                        frame["width"], frame["stage"], frame["band"],
+                        len(frame["notes"]),
+                        frame["notes"][0]["runes"] if frame["notes"] else 0))
+          problems = []
+          if fit["note_runes"] != 160:
+              problems.append("the fixture fed %d runes, not MaxNoteRunes=160"
+                              % fit["note_runes"])
+          if fit["widths"] != 3 or fit["notes"] < 6:
+              problems.append("only %d commander lines over %d widths"
+                              % (fit["notes"], fit["widths"]))
+          for key in ("short", "outside", "clipped"):
+              if fit[key]:
+                  problems.append("%d commander line(s) %s" % (fit[key], key))
+          if fit["chrome_off_stage"]:
+              problems.append("%d chrome box(es) entirely outside #stage"
+                              % fit["chrome_off_stage"])
+          problems.extend(fit["failures"])
+          if problems:
+              for problem in problems:
+                  print("::error::text fit: %s" % problem)
+              raise SystemExit(1)
+          print("commander band OK: %d boxes measured, %d full-cap notes "
+                "inside #stage at 360/620/1280 px (%d partial chrome overflow "
+                "reported, not gated)" % (
+                    fit["measured"], fit["notes"], fit["chrome_outside"]))
+          PY
+
       - name: Upload the worst-case chrome evidence
         if: always()
         uses: actions/upload-artifact@v4

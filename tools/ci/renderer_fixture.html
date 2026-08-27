@@ -25,6 +25,25 @@
   strip, a research rail crossing 200, a deep-night frame and a citylost
   banner, at 360 / 620 / 1280 px.
 
+  ALL of this game's chrome text is DOM, not canvas, so the harness's
+  `canvas_text` tally is structurally 0 and `--strict-text-bounds` gates
+  nothing here. The text-fit evidence is produced by THIS page instead:
+  after the frames are fed it reads each commander line back OUT of the
+  iframe's DOM and
+
+    1. asserts the rendered string is still the full 160 runes it fed —
+       a quietly shortened remark leaves a fixture passing while testing
+       nothing;
+    2. measures every .feed-row / .badge / .plate box against #stage and the
+       iframe viewport, so a band with nowhere to go is caught even though
+       nothing was ever drawn on a canvas;
+    3. prints the whole measurement as one `LUX-TEXTFIT {json}` console line.
+       `viewer_smoke.mjs` copies the console tail into viewer-smoke.json and
+       ci.yml's "The commander line fits its band" step parses that line and
+       fails the job on a short, clipped or out-of-stage note. Anything the
+       measurement itself cannot do (no rows found, no core, a throw in either
+       frame) lands in `data-replay-error`, which fails the smoke immediately.
+
   Run it with the same harness the real bundle gets:
     node tools/ci/viewer_smoke.mjs --bundle dist/static-replay-viewer \
       --replay <anything> --url http://127.0.0.1:PORT/renderer_fixture.html \
@@ -35,6 +54,11 @@
   'use strict';
 
   var WIDTHS = [360, 620, 1280];
+  // MaxNoteRunes (src/lux/sim_types.nim): the cap sanitizeNote enforces on
+  // every `note` that reaches the replay. The band in the game block is sized
+  // from this same number; if one moves without the other, the measurement
+  // below is what says so.
+  var NOTE_RUNES = 160;
   var NOTE_A = 'take the coal belt at column 3 before they research; two ' +
     'tiles on the wood edge and the cart paves the road home tonight, then ' +
     'we bank fuel and hold the blob compact until dawn of cycle six ok!!';
@@ -45,6 +69,12 @@
   function runeCap(text, cap) {
     return Array.from(text).slice(0, cap).join('');
   }
+
+  function runeLen(text) {
+    return Array.from(String(text)).length;
+  }
+
+  var FED = [runeCap(NOTE_A, NOTE_RUNES), runeCap(NOTE_B, NOTE_RUNES)];
 
   function cities() {
     var out = [];
@@ -92,9 +122,9 @@
       events: events || [],
       dir: [
         { seat: 0, alias: 'RED-alpha', turn: tick, stance: 'expand',
-          source: 'llm', note: runeCap(NOTE_A, 160) },
+          source: 'llm', note: FED[0] },
         { seat: 1, alias: 'BLUE-alpha', turn: tick, stance: 'turtle',
-          source: 'llm', note: runeCap(NOTE_B, 160) }
+          source: 'llm', note: FED[1] }
       ],
       turn: 234, turns: 360, cycle: 6, cycles: 9,
       night: true, nightTurn: 8, nightTurns: 10, dayLength: 30,
@@ -165,11 +195,151 @@
     '    }',
     '  };',
     '  window.__luxFixtureFeed = function (state) {',
-    '    if (listeners && listeners.onText) listeners.onText(JSON.stringify(state));',
+    '    if (!listeners || !listeners.onText) {',
+    '      throw new Error("renderer fixture: the page never took the shim");',
+    '    }',
+    '    listeners.onText(JSON.stringify(state));',
     '  };',
     '}());',
     '<\/script>'
   ].join('\n');
+
+  // ---- the measurement --------------------------------------------------
+  // Two tiers, the same doctrine viewer_smoke.mjs applies to canvas text:
+  //   GATED   the commander band — model-authored text, capped by the server.
+  //           It must be full-length, unclipped and WHOLLY inside #stage.
+  //   READ    the rest of the chrome (plates, event rows). A partial overlap
+  //           is reported; only a box with no intersection at all is a
+  //           failure, because a plate name that ellipsises at the true track
+  //           edge is the starter's design, not a defect.
+  var TOL = 1;
+
+  function boxOf(el) {
+    var b = el.getBoundingClientRect();
+    return [Math.round(b.left), Math.round(b.top),
+            Math.round(b.right), Math.round(b.bottom)];
+  }
+
+  function edgesOutside(box, frame) {
+    var edges = [];
+    if (box[0] < frame[0] - TOL) edges.push('left');
+    if (box[1] < frame[1] - TOL) edges.push('top');
+    if (box[2] > frame[2] + TOL) edges.push('right');
+    if (box[3] > frame[3] + TOL) edges.push('bottom');
+    return edges.join('+');
+  }
+
+  function disjoint(box, frame) {
+    return box[2] <= frame[0] || box[0] >= frame[2] ||
+      box[3] <= frame[1] || box[1] >= frame[3];
+  }
+
+  function measure(win, doc, width) {
+    var stage = doc.getElementById('stage');
+    if (!stage) throw new Error('renderer fixture: no #stage at ' + width);
+    var band = doc.getElementById('killfeed');
+    if (!band) throw new Error('renderer fixture: no #killfeed at ' + width);
+    var sb = boxOf(stage);
+    var view = [0, 0, win.innerWidth, win.innerHeight];
+    var report = {
+      width: width,
+      stage: sb,
+      band: boxOf(band),
+      viewport: [win.innerWidth, win.innerHeight],
+      hudscale: win.getComputedStyle(doc.documentElement)
+        .getPropertyValue('--hudscale').trim(),
+      tiny: stage.classList.contains('tiny'),
+      notes: [],
+      chrome: [],
+      failures: []
+    };
+
+    // 1. the commander band, read back out of the DOM.
+    var said = doc.querySelectorAll('#killfeed .feed-row.lux-say .badge');
+    for (var i = 0; i < said.length; i++) {
+      var el = said[i];
+      var text = el.textContent || '';
+      var box = boxOf(el);
+      var row = el.closest('.feed-row');
+      var entry = {
+        runes: runeLen(text),
+        expected: NOTE_RUNES,
+        seat: FED.indexOf(text),
+        box: box,
+        row: boxOf(row),
+        outside_stage: edgesOutside(box, sb),
+        outside_view: edgesOutside(box, view),
+        clipped: el.scrollWidth > el.clientWidth + TOL ||
+          el.scrollHeight > el.clientHeight + TOL
+      };
+      report.notes.push(entry);
+      if (entry.seat < 0) {
+        report.failures.push(width + 'px: the rendered note is not the note ' +
+          'that was fed (' + entry.runes + ' runes): ' +
+          JSON.stringify(text.slice(0, 48)));
+      } else if (entry.runes !== NOTE_RUNES) {
+        report.failures.push(width + 'px: the note rendered ' + entry.runes +
+          ' runes, the server cap is ' + NOTE_RUNES);
+      }
+      if (entry.outside_stage) {
+        report.failures.push(width + 'px: the commander band crosses the ' +
+          entry.outside_stage + ' edge of #stage (band ' + box.join(',') +
+          ' in stage ' + sb.join(',') + ')');
+      }
+      if (entry.outside_view) {
+        report.failures.push(width + 'px: the commander band crosses the ' +
+          entry.outside_view + ' edge of the viewport (band ' + box.join(',') +
+          ')');
+      }
+      if (entry.clipped) {
+        report.failures.push(width + 'px: the commander band clips its own ' +
+          'text (' + el.scrollWidth + 'x' + el.scrollHeight + ' of text in ' +
+          el.clientWidth + 'x' + el.clientHeight + ')');
+      }
+    }
+    // Both seats speak on every frame, so both notes must be on the page.
+    for (var seat = 0; seat < FED.length; seat++) {
+      var found = false;
+      for (var n = 0; n < report.notes.length; n++) {
+        if (report.notes[n].seat === seat) found = true;
+      }
+      if (!found) {
+        report.failures.push(width + 'px: seat ' + seat + ' spoke a full-cap ' +
+          'note and nothing rendered it');
+      }
+    }
+
+    // 2. the rest of the chrome, read and reported.
+    var groups = [['feed-row', '#killfeed .feed-row'],
+                  ['badge', '#killfeed .feed-row .badge'],
+                  ['plate', '#scorebug .plate'],
+                  ['plate-name', '#scorebug .plate-name']];
+    for (var g = 0; g < groups.length; g++) {
+      var found2 = doc.querySelectorAll(groups[g][1]);
+      for (var j = 0; j < found2.length; j++) {
+        var node = found2[j];
+        var nbox = boxOf(node);
+        var item = {
+          kind: groups[g][0],
+          box: nbox,
+          outside_stage: edgesOutside(nbox, sb),
+          off_stage: disjoint(nbox, sb),
+          text: (node.textContent || '').slice(0, 24)
+        };
+        report.chrome.push(item);
+        if (item.off_stage) {
+          report.failures.push(width + 'px: a ' + item.kind +
+            ' is entirely outside #stage (' + nbox.join(',') + ' vs ' +
+            sb.join(',') + '): ' + JSON.stringify(item.text));
+        }
+      }
+      if (found2.length === 0) {
+        report.failures.push(width + 'px: nothing matched ' + groups[g][1] +
+          ' — the fixture measured nothing');
+      }
+    }
+    return report;
+  }
 
   function build(width, index) {
     var host = document.createElement('iframe');
@@ -179,10 +349,14 @@
     return fetch('./index.html').then(function (response) {
       return response.text();
     }).then(function (page) {
-      // Shim ONLY the wasm entry: everything else is the shipped page.
-      var patched = page.replace(
-        '<script src="./static_replay.js"><\/script>',
-        SHIM + '\n<script src="./static_replay.js"><\/script>');
+      // Shim ONLY the wasm entry: everything else is the shipped page. The
+      // shim goes AFTER the script it replaces — static_replay.js assigns
+      // window.LuxStaticReplay itself, so a shim placed before it is
+      // overwritten and the page boots the real wasm worker instead (which
+      // then fails on "Missing required replay URL" inside the iframe, where
+      // nothing was looking).
+      var anchor = '<script src="./static_replay.js"><\/script>';
+      var patched = page.replace(anchor, anchor + '\n' + SHIM);
       if (patched === page) {
         throw new Error('renderer fixture: the shipped index.html no longer ' +
           'loads ./static_replay.js — the shim has nowhere to go');
@@ -191,26 +365,95 @@
       doc.open();
       doc.write(patched);
       doc.close();
-      return new Promise(function (resolve) {
+      return new Promise(function (resolve, reject) {
         var tries = 0;
         function pump() {
-          tries++;
-          var feed = host.contentWindow.__luxFixtureFeed;
-          if (!feed) {
-            if (tries > 200) {
-              throw new Error('renderer fixture: the page never created a core');
+          try {
+            tries++;
+            var feed = host.contentWindow.__luxFixtureFeed;
+            if (!feed) {
+              if (tries > 200) {
+                throw new Error('renderer fixture: the page never created a ' +
+                  'core at ' + width + 'px');
+              }
+              return setTimeout(pump, 25);
             }
-            return setTimeout(pump, 25);
+            feed(frame(430, index === 0 ? EVENTS : []));
+            // 431, not 440: the page reads a jump of more than stride*4+2
+            // ticks as a seek and clears the feed, so a distant second frame
+            // would measure ONE turn's rows. A stride-1 advance stacks the
+            // second turn's commander lines on top of the first, which is the
+            // tallest the band ever gets.
+            setTimeout(function () {
+              try {
+                feed(frame(431, []));
+              } catch (error) {
+                reject(error);
+                return;
+              }
+              // Each row slides in from `translateX(30 * var(--u))`. Measure
+              // only once that has SETTLED — the same allowance
+              // viewer_smoke.mjs makes for a card animating in from
+              // off-frame, and the "entrance animation played through to
+              // settle" the checklist asks a worst-case fixture for. The
+              // feed's dwell floor holds the row for 2.6 s, so this still
+              // measures live rows.
+              setTimeout(function () {
+                try {
+                  resolve(measure(host.contentWindow,
+                                  host.contentDocument, width));
+                } catch (error) {
+                  reject(error);
+                }
+              }, 500);
+            }, 60);
+          } catch (error) {
+            reject(error);
           }
-          feed(frame(430, index === 0 ? EVENTS : []));
-          setTimeout(function () { feed(frame(440, [])); resolve(); }, 60);
         }
         pump();
       });
     });
   }
 
-  Promise.all(WIDTHS.map(build)).then(function () {
+  Promise.all(WIDTHS.map(build)).then(function (reports) {
+    var summary = {
+      note_runes: NOTE_RUNES,
+      widths: reports.length,
+      measured: 0,
+      notes: 0,
+      short: 0,
+      outside: 0,
+      clipped: 0,
+      chrome_outside: 0,
+      chrome_off_stage: 0,
+      failures: [],
+      detail: reports
+    };
+    reports.forEach(function (report) {
+      summary.measured += report.notes.length + report.chrome.length;
+      report.notes.forEach(function (note) {
+        summary.notes += 1;
+        if (note.seat < 0 || note.runes !== NOTE_RUNES) summary.short += 1;
+        if (note.outside_stage || note.outside_view) summary.outside += 1;
+        if (note.clipped) summary.clipped += 1;
+      });
+      report.chrome.forEach(function (item) {
+        if (item.outside_stage) summary.chrome_outside += 1;
+        if (item.off_stage) summary.chrome_off_stage += 1;
+      });
+      report.failures.forEach(function (f) { summary.failures.push(f); });
+    });
+    if (summary.notes < 2 * WIDTHS.length) {
+      summary.failures.push('only ' + summary.notes + ' commander lines were ' +
+        'measured; two seats x ' + WIDTHS.length + ' widths is the minimum');
+    }
+    // ONE line, last: viewer_smoke.mjs keeps the console tail in
+    // viewer-smoke.json and ci.yml gates on this object.
+    console.log('LUX-TEXTFIT ' + JSON.stringify(summary));
+    if (summary.failures.length) {
+      throw new Error('text does not fit: ' + summary.failures.join(' | '));
+    }
     document.documentElement.setAttribute('data-replay-loaded', 'true');
   }).catch(function (error) {
     document.documentElement.setAttribute('data-replay-error', String(error));

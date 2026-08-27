@@ -1824,6 +1824,64 @@ body[data-embed] #board { top: 0; height: 100%; }
   flex: none;
 }
 
+/* --- the commander line: a RESERVED band, sized from the server's cap ---- */
+/* The directive `note` is the only model-authored string this viewer draws,
+   and the server caps it at MaxNoteRunes = 160 runes (src/lux/sim_types.nim,
+   cut by sanitizeNote). The inherited `.feed-row` is NOT sized for it: it is
+   `white-space: nowrap; max-width: none` and its own comment says why —
+   "bounded by the small font + the pre-bounded 10-char name". A sentence is
+   not a name. Measured in the badge's own font a full-cap note runs ~773 *
+   var(--u) on one line while the feed column is 228 * var(--u) wide, so the
+   nowrap row grew ~600 * var(--u) LEFTWARD out of `#stage { overflow: hidden }`
+   and every commander line rendered off-frame: at 360px the badge's measured
+   box was x = -163..235 in a stage that starts at x = 116.
+
+   So the commander line gets its own band instead of the name-shaped row: the
+   full width of the feed column, wrapping (`anywhere` — a 160-rune note need
+   not contain a space), with its height RESERVED from the cap so the feed does
+   not jump when a remark lands. Every number below is derived, not eyeballed,
+   and `tools/ci/renderer_fixture.html` + ci.yml's "The commander line fits its
+   band" step re-measure the result in a real browser at 360 / 620 / 1280 px. */
+:root {
+  --lux-note-runes: 160;   /* MaxNoteRunes: the server's cap on `note` */
+  --lux-note-em: 0.69;     /* mean advance of one uppercase --finefont rune
+                              at the badge's 0.1em tracking, measured */
+  --lux-note-size: 7;      /* .feed-row .badge font-size, in --u */
+  --lux-note-run: 773;     /* the whole cap on one line, in --u:
+                              160 * 0.69 * 7 */
+  --lux-note-line: 206;    /* text width of one line: the 228 --u column less
+                              the row's 7+7 and the badge's 4+4 padding */
+  --lux-note-lines: 4;     /* ceil(773 / 206) */
+  --lux-say-band:          /* wrapped lines at 1.35, + the speaker line and
+                              the row padding */
+    calc(var(--lux-note-lines) * 1.35 * var(--lux-note-size) * var(--u) +
+         18 * var(--u));
+}
+/* `.tiny` narrows the feed column to 190 --u, so the same cap needs one more
+   line there (ceil(773 / 168) = 5). */
+#stage.tiny { --lux-note-line: 168; --lux-note-lines: 5; }
+#killfeed,
+#stage.tiny #killfeed {
+  /* Reserved whether or not anybody is speaking. */
+  min-height: calc(3 * 20 * var(--u) + var(--lux-say-band));
+}
+.feed-row.lux-say {
+  display: block;                  /* the note wraps UNDER the speaker */
+  box-sizing: border-box;
+  width: 100%;                     /* the band, not shrink-to-fit */
+  max-width: 100%;
+  white-space: normal;
+  min-height: var(--lux-say-band);
+}
+.feed-row.lux-say .who { margin-right: calc(4 * var(--u)); }
+.feed-row.lux-say .badge {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+  margin-top: calc(2 * var(--u));
+}
+
 /* --- the cycle bar: nine cycles, each 30 light + 10 dark ---------------- */
 #cyclebar {
   display: flex;
@@ -2348,9 +2406,12 @@ button.beat-marker {
       if (seenDirective[key]) continue;
       seenDirective[key] = true;
       if (!d.note) continue;
+      // `lux-say`: the reserved, wrapping commander band. The bare
+      // `.feed-row` is the starter's nowrap name row and a 160-rune note runs
+      // straight off the stage on it.
       luxFeed('<span class="who ' + (d.seat === 0 ? 'red' : 'blue') + '">' +
         luxEsc(d.alias) + '</span><span class="glyph">:</span>' +
-        '<span class="badge">' + luxEsc(d.note) + '</span>');
+        '<span class="badge">' + luxEsc(d.note) + '</span>', 'lux-say');
     }
   }
 
