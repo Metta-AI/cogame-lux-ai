@@ -81,23 +81,28 @@ suite "lux directives":
     expect DirectiveError:
       discard parse("")
 
-  test "a 9 KB reply is capped and then parsed":
+  test "a 9 KB reply is capped, and the cut-open remainder fails as a CLASSIFIED error":
     var padding = ""
     for _ in 0 ..< 9000:
       padding.add('y')
     let capped = ("""{"stance":"fuel","note":"""" & padding & """"}""")
       .truncateRunes(MaxReplyBytes)
-    ## The cap can cut the JSON open, so the tolerant extractor's
-    ## first-brace..last-brace rescue is what must recover it; either way the
-    ## caller must never see an exception it cannot classify.
-    var recovered = false
+    check capped.runeLen == MaxReplyBytes
+    ## The cap cuts the JSON open — this reply keeps its opening brace and
+    ## loses its closing one entirely, so there is nothing for the tolerant
+    ## extractor's first-brace..last-brace rescue to grab. What matters is
+    ## that the caller sees a DirectiveError it can record as `parse_error`,
+    ## never an unclassified JsonParsingError from underneath.
+    var reason = "parsed"
     try:
       discard parse(capped)
-      recovered = true
-    except DirectiveError:
-      recovered = false
-    check capped.runeLen == MaxReplyBytes
-    check (recovered or true)
+    except DirectiveError as error:
+      reason = error.msg
+    check reason.startsWith("no JSON object in reply")
+    ## and a 9 KB reply whose object CLOSES inside the cap parses normally
+    let survivor = ("""{"stance":"fuel","note":"n"} """ & padding)
+      .truncateRunes(MaxReplyBytes)
+    check parse(survivor).stance == stFuel
 
   test "a note whose 160th and 161st characters are a 4-byte emoji cuts on the RUNE":
     var note = ""
