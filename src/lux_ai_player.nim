@@ -26,9 +26,13 @@ import lux/[directives, sim_types]
 
 const
   DialAttempts = 240
+    ## The FIRST dial waits for the game container to come up.
+  RedialAttempts = 10
+    ## A re-dial after a mid-episode drop does not: the game is either there
+    ## within a few seconds or the episode is over.
   DialDelayMs = 500
   RegistrationResends = 10
-  ReceiveRetries = 6
+  ReceiveRetries = 2
 
 proc socketUrl(): string =
   result = getEnv("COWORLD_PLAYER_WS_URL").strip()
@@ -61,12 +65,12 @@ proc registrationBlob(): string =
   ## cut can never land inside a codepoint.
   blobFromSpriteChat($payload)
 
-proc dial(url: string): WebSocket =
-  for attempt in 1 .. DialAttempts:
+proc dial(url: string, attempts: int): WebSocket =
+  for attempt in 1 .. attempts:
     try:
       return newWebSocket(url)
     except CatchableError as error:
-      if attempt == DialAttempts:
+      if attempt == attempts:
         echo "lux-ai-player: could not connect after ", attempt,
           " attempts: ", error.msg
         return nil
@@ -80,7 +84,7 @@ proc run(): int =
   echo "lux-ai-player: dialling ", url
   var redials = 0
   while redials <= ReceiveRetries:
-    let socket = dial(url)
+    let socket = dial(url, if redials == 0: DialAttempts else: RedialAttempts)
     if socket == nil:
       return 0
     var
@@ -109,10 +113,17 @@ proc run(): int =
         socket.close()
       except CatchableError:
         discard
+      ## EXIT 0 ON A DEAD SOCKET. whisky's `receiveMessage` RAISES on a close
+      ## frame, and the game's `quit(0)` can outrun the flushed `done` frame, so
+      ## a naive player exits 1 and fails certification intermittently (the raid
+      ## 0.1.3 scar). Once a frame has arrived the episode was real and its end
+      ## is the normal end of this process.
       if frames > 0:
         return 0
       inc redials
       sleep(DialDelayMs)
+  ## Every re-dial exhausted without ever seeing a frame: still exit 0. Nothing
+  ## a player container does may fail an episode the game itself completed.
   0
 
 when isMainModule:

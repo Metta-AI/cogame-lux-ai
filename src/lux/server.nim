@@ -373,10 +373,18 @@ proc runServerLoop*(
 
   proc broadcast(packet: seq[uint8]) =
     ## Fire-and-forget: a slow spectator can never stall the episode.
+    ##
+    ## SEATS GET THE FRAME TOO. `fastMode` means a seat sends no inputs, but it
+    ## must still SEE something: its container's receive loop is what keeps it
+    ## alive and what tells it the episode ended (the socket closing after a
+    ## frame). A seat that is never sent a frame blocks in `receiveMessage`
+    ## until the game exits and then cannot tell "the episode is over" from
+    ## "the connection never worked" — which is how a player container ends up
+    ## re-dialling past the certifier's patience.
     let blob = blobFromBytes(packet)
     withLock appState.lock:
       for id, connection in appState.connections:
-        if connection.kind != 1:
+        if connection.kind == 2:
           continue
         try:
           appState.sockets[id].send(blob, BinaryMessage)
