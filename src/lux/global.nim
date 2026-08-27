@@ -18,6 +18,7 @@
 
 import std/[math, os, strutils, tables]
 
+
 import bitworld/spriteprotocol
 import pixie
 
@@ -71,7 +72,14 @@ var
 proc assetPath(name: string): string =
   ## `data/` is preloaded into the wasm filesystem at the same relative path
   ## the native binary reads it from, so one lookup serves both.
-  for candidate in [name, "/" & name, getAppDir() / name]:
+  ##
+  ## NEVER `getAppDir()`. Under emscripten there is no /proc, so Nim's
+  ## `getApplAux` gets -1 out of `readlink("/proc/self/exe")` and hands it
+  ## straight to `setLen`, which is a RangeDefect on a 32-bit target
+  ## ("value out of range: -1 notin 0 .. 2147483647"). It killed the bundle on
+  ## its first drawn frame with no other diagnostic, and it is invisible to
+  ## every native build because /proc/self/exe resolves there.
+  for candidate in [name, "/" & name, "/workspace/lux" / name]:
     if fileExists(candidate):
       return candidate
   name
@@ -342,6 +350,13 @@ func fullnessLevel(amount, start: int): int =
 func ringLevel(fuel: int64, upkeep: int): int =
   if upkeep <= 0: 8
   else: int(clamp(fuel * 8'i64 div int64(10 * upkeep), 0'i64, 8'i64))
+
+proc ensureBoardArt*(size: int) =
+  ## Bakes the island and every chip for one board size. Exposed so the wasm
+  ## entry can stamp its own progress note around it: the bake reads five PNGs
+  ## out of the preloaded filesystem and is the first thing that can fail on a
+  ## page that has otherwise loaded.
+  ensureBaked(size)
 
 proc buildBoardPacket*(
   sim: var SimServer, state: GlobalViewerState, nextState: var GlobalViewerState

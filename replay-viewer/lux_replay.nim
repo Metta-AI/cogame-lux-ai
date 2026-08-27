@@ -37,9 +37,16 @@ proc bytesFromPointer(data: ptr uint8, length: int): string =
     copyMem(result[0].addr, data, length)
 
 proc renderCurrent(events: JsonNode) =
+  ## Stamped in three pieces on purpose: an abort or a defect inside any of
+  ## them is otherwise indistinguishable from the outside, and the stage note
+  ## is the ONLY diagnostic that survives an allocation abort.
   var nextViewer: GlobalViewerState
+  stampStage("bake board art")
+  ensureBoardArt(game.world.board.size)
+  stampStage("build the board packet")
   packet = buildReplayViewerPacket(
     game, replay, tracker, viewer, nextViewer, events)
+  stampStage(frameStage)
   viewer = nextViewer
 
 proc luxLoadReplay(data: ptr uint8, length: cint): cint

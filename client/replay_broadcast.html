@@ -1271,25 +1271,17 @@ body[data-embed] #board { top: 0; height: 100%; }
     // Distinct cycle lengths keep the four carousels out of phase; the
     // composed scene state repeats only every few minutes.
     var LK_BOTS = {
-      green:  { ax: 22.83, ay: 76.67, cyc: 4.6,
-        poses: [{ f: 1, w: 14.82, h: 18.03 }, { f: 2, w: 14.92, h: 18.25 },
-                { f: 3, w: 14.62, h: 18.14 }, { f: 5, w: 14.82, h: 18.25 },
-                { f: 6, w: 14.62, h: 19.01 }] },
-      blue:   { ax: 41.08, ay: 76.67, cyc: 3.8,
+      blue:   { ax: 32.00, ay: 76.67, cyc: 3.8,
         poses: [{ f: 1, w: 16.63, h: 18.25 }, { f: 2, w: 14.92, h: 21.6 },
                 { f: 3, w: 15.83, h: 21.81 }, { f: 5, w: 16.63, h: 20.63 },
                 { f: 6, w: 14.62, h: 22.68 }] },
-      yellow: { ax: 59.93, ay: 76.78, cyc: 5.2,
-        poses: [{ f: 1, w: 16.43, h: 18.57 }, { f: 2, w: 15.52, h: 18.57 },
-                { f: 3, w: 15.62, h: 18.57 }, { f: 5, w: 16.13, h: 18.36 },
-                { f: 6, w: 15.83, h: 23.11 }] },
-      red:    { ax: 79.03, ay: 77.43, cyc: 4.1,
+      red:    { ax: 68.00, ay: 77.43, cyc: 4.1,
         poses: [{ f: 1, w: 18.15, h: 18.79 }, { f: 2, w: 15.93, h: 20.19 },
                 { f: 3, w: 15.52, h: 19.87 }, { f: 5, w: 15.83, h: 20.63 },
                 { f: 6, w: 16.73, h: 21.06 }] }
     };
     var spritesEl = $('lk-sprites');
-    ['green', 'blue', 'yellow', 'red'].forEach(function (bot) {
+    ['blue', 'red'].forEach(function (bot) {
       var b = LK_BOTS[bot];
       var maxW = 0, maxH = 0;
       b.poses.forEach(function (p) {

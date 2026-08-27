@@ -101,8 +101,11 @@ func mixHash*(hash: var uint64, value: int) =
   hash = hash xor (hash shr 29)
 
 func mixHash64*(hash: var uint64, value: int64) =
-  hash.mixHash(int(value and 0xFFFFFFFF'i64))
-  hash.mixHash(int((value shr 32) and 0xFFFFFFFF'i64))
+  ## Both halves as int32, by CAST rather than conversion: `int(x and
+  ## 0xFFFFFFFF)` is a RangeDefect on a 32-bit target the moment the low half
+  ## exceeds 2^31-1, and `--cpu:wasm32` is a 32-bit target.
+  hash.mixHash(int(cast[int32](uint32(value and 0xFFFFFFFF'i64))))
+  hash.mixHash(int(cast[int32](uint32((value shr 32) and 0xFFFFFFFF'i64))))
 
 func gameHash*(world: World): uint64 =
   ## The fixed mix order of the design note. Add a field only at the END and

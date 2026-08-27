@@ -175,6 +175,23 @@ PATCH = [
      "      document.body.setAttribute('data-noviewpanel', '1');\n"
      "  } catch (e) {}\n\n",
      ""),
+    # The locker room ships FOUR bots because paintbot has four teams; this
+    # game has exactly two sides and only ships their webps, so the green and
+    # yellow carousels would 404 on every load.
+    ("""      green:  { ax: 22.83, ay: 76.67, cyc: 4.6,
+        poses: [{ f: 1, w: 14.82, h: 18.03 }, { f: 2, w: 14.92, h: 18.25 },
+                { f: 3, w: 14.62, h: 18.14 }, { f: 5, w: 14.82, h: 18.25 },
+                { f: 6, w: 14.62, h: 19.01 }] },
+      blue:   { ax: 41.08""",
+     """      blue:   { ax: 32.00"""),
+    ("""      yellow: { ax: 59.93, ay: 76.78, cyc: 5.2,
+        poses: [{ f: 1, w: 16.43, h: 18.57 }, { f: 2, w: 15.52, h: 18.57 },
+                { f: 3, w: 15.62, h: 18.57 }, { f: 5, w: 16.13, h: 18.36 },
+                { f: 6, w: 15.83, h: 23.11 }] },
+      red:    { ax: 79.03""",
+     """      red:    { ax: 68.00"""),
+    ("    ['green', 'blue', 'yellow', 'red'].forEach(function (bot) {",
+     "    ['blue', 'red'].forEach(function (bot) {"),
     ("    onTransform: function (t) { syncViewUi(t); }",
      "    onTransform: function (t) { void t; }"),
     # the view keys belonged to the dropped #viewpanel: a fixed 16x16 board
