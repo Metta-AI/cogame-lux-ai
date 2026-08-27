@@ -362,7 +362,21 @@ jobs:
           for candidate in dist/smoke/*.replay dist/smoke/replay.json; do
             if [ -f "${candidate}" ]; then replay="${candidate}"; break; fi
           done
-          node tools/wasm_replay_smoke.cjs dist/static-replay-viewer "${replay}" 300
+          test -n "${replay}" || {
+            echo "::error::no replay in dist/smoke for the wasm hash gate"
+            ls -la dist/smoke || true; exit 1; }
+          # The budget is READ FROM THE REPLAY, not pinned: a fixed 300 frames
+          # covered only ticks 48-348 of a 408-tick duel, leaving the last 60
+          # ticks and the settle tick outside the wasm gate, and it would go
+          # stale the moment the lobby is longer or maxTurns moves. One frame
+          # advances one tick at playback speed 1, and the walk starts at the
+          # recorded start tick, so the recorded tick count is a budget that
+          # always reaches the final tick.
+          frames="$(python3 tools/replay_summary.py "${replay}" |
+            python3 -c 'import json,sys; print(json.load(sys.stdin)["tickCount"])')"
+          echo "advancing ${frames} frames (the replay's whole recorded span)"
+          node tools/wasm_replay_smoke.cjs dist/static-replay-viewer \
+            "${replay}" "${frames}"
 
       # docker_smoke.sh runs with NO ANTHROPIC_API_KEY, so every seat in the CI
       # replay plays scripted and emits no `note` at all — nothing that plays
