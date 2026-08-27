@@ -62,6 +62,54 @@ proc record(
   writer.closeReplayWriter()
   result.game = game
 
+proc recordWithLobby(config: GameConfig, path: string, joinTick: int): Recorded =
+  ## `server.nim`'s loop for an episode whose seats connect at `joinTick`:
+  ## `syncSeats` writes each join record at the tick that seat's socket
+  ## appeared, the lobby writes one hash per waiting tick, and `InputStart` is
+  ## written at the tick `Playing` actually began — which is
+  ## `max(startWaitTicks, joinTick)`, not `startWaitTicks`. Nothing here zeroes
+  ## `startWaitTicks`: a lobby LONGER than it is the whole point of the
+  ## fixture.
+  result.path = path
+  var writer = openReplayWriter(path, $config.configJson(), LuxReplaySpec)
+  var game = initSimServer(config)
+  game.seats[0].name = "daveey"
+  game.seats[1].name = "daveey-1"
+  var joinWritten: array[2, bool]
+  var lastDirective = -1
+  while not game.episodeFinished():
+    if game.tickCount >= joinTick:
+      for seat in 0 .. 1:
+        if not game.seats[seat].joined:
+          game.seats[seat].joined = true
+          game.seats[seat].connected = true
+        if not joinWritten[seat]:
+          joinWritten[seat] = true
+          writer.writeJoin(tickTime(game.tickCount, ReplayFps), seat,
+            game.seats[seat].name, seat, "token-" & $seat)
+    if game.phase == Lobby:
+      let joined = game.seats[0].joined and game.seats[1].joined
+      if joined and game.tickCount >= config.startWaitTicks:
+        writer.writeInputPacket(game.tickCount, 0, controlPacket(InputStart))
+        game.beginPlaying()
+      else:
+        writer.writeHash(uint32(game.tickCount), game.gameHash())
+        inc game.tickCount
+        continue
+    if game.phase == Playing and game.isDirectiveTurn(game.world.turn) and
+        game.world.turn != lastDirective:
+      lastDirective = game.world.turn
+      game.setDirective(0, scriptedDirective(game.world, blForester, 0))
+      game.setDirective(1, scriptedDirective(game.world, blProspector, 1))
+      for seat in 0 .. 1:
+        writer.writeInputPacket(game.tickCount, seat,
+          directivePacket(game.world.directiveBytes[seat]))
+    writer.writeHash(uint32(game.tickCount), game.gameHash())
+    game.step()
+  writer.writeChat(tickTime(game.tickCount, ReplayFps), 0, game.resultRecord())
+  writer.closeReplayWriter()
+  result.game = game
+
 proc replayCleanly(path: string): tuple[player: ReplayPlayer, sim: SimServer] =
   let data = parseLuxReplay(readFile(path))
   var initialized = initReplayRuntime(data, mismatchQuit = true)
@@ -98,6 +146,38 @@ suite "lux replay":
       recorded.game.world.cities.tileCount(Red)
     check played.sim.world.cities.tileCount(Blue) ==
       recorded.game.world.cities.tileCount(Blue)
+
+  test "a lobby LONGER than startWaitTicks re-derives frame by frame":
+    ## The recorded lobby is a wall-clock fact: seats that connect at tick 120
+    ## make the live game start at 120, and playback must start there too. When
+    ## playback seated both seats at construction instead, the re-simulation
+    ## started at `startWaitTicks` (48), the chain broke at tick 49 and a
+    ## recorded 18-1 episode re-derived as 17-3 — a different game under a
+    ## mismatch banner. `startWaitTicks` is left at its SHIPPED value here on
+    ## purpose: zeroing it in the fixture is what hid this.
+    for joinTick in [0, 49, 120]:
+      var config = defaultGameConfig()
+      config.seed = 42
+      config.mapSize = 16
+      check config.startWaitTicks == 48
+      let path = dir / ("lobby" & $joinTick & ".replay")
+      let recorded = recordWithLobby(config, path, joinTick)
+      checkpoint("seats connect at tick " & $joinTick)
+      check recorded.game.gameStartTick == max(config.startWaitTicks, joinTick)
+      check recorded.game.endRule == erlFullTime
+      ## `mismatchQuit = true`: any divergent tick raises, so this asserts the
+      ## WHOLE chain, not just the final board.
+      let played = replayCleanly(path)
+      check played.player.hashMismatchTick == -1
+      check played.player.replayStartTick() == recorded.game.gameStartTick
+      check played.sim.gameStartTick == recorded.game.gameStartTick
+      check played.sim.world.turn == recorded.game.world.turn
+      check played.sim.endRule == recorded.game.endRule
+      check played.sim.gameHash() == recorded.game.gameHash()
+      check played.sim.world.cities.tileCount(Red) ==
+        recorded.game.world.cities.tileCount(Red)
+      check played.sim.world.cities.tileCount(Blue) ==
+        recorded.game.world.cities.tileCount(Blue)
 
   test "the wall_clock stop re-derives INCLUDING the stop turn":
     let path = dir / "wall_clock.replay"

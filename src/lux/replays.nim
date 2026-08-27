@@ -122,13 +122,18 @@ proc simFromReplay*(data: codec.ReplayData): SimServer =
   result = initSimServer(config)
   result.gameEventLoggingEnabled = false
   result.world.eventLoggingEnabled = false
+  ## The seats are NOT seated here: a seat becomes `joined` at the tick its
+  ## join record was written (`applyRecordsAt`), because the lobby's length is
+  ## a wall-clock fact and the `Lobby` auto-start reads `joined`. Seating them
+  ## at construction starts playback at `startWaitTicks` no matter when the
+  ## sockets actually appeared, which re-derives a DIFFERENT game whenever the
+  ## live lobby ran longer than that. Names and slots are presentation-only
+  ## (not hashed), so they are restored up front for the pre-start frames.
   for join in data.joins:
     let seat = int(join.player)
     if seat in 0 .. 1:
       result.seats[seat].name = join.name
       result.seats[seat].slot = join.slot
-      result.seats[seat].joined = true
-      result.seats[seat].connected = true
 
 proc applyChatRecord(player: var ReplayPlayer, sim: var SimServer, message: string) =
   ## Chat records are PRESENTATION ONLY and are re-applied into non-hashed
@@ -169,7 +174,14 @@ proc applyChatRecord(player: var ReplayPlayer, sim: var SimServer, message: stri
 
 proc applyRecordsAt(player: var ReplayPlayer, sim: var SimServer, tick: int) =
   ## Every record whose recorded tick is this one, applied BEFORE the tick is
-  ## stepped. Inputs first (load-bearing), then chats (presentation).
+  ## stepped. Joins first (they are what the lobby waits on, and the live loop
+  ## syncs the seats before it tests the lobby), then inputs (load-bearing),
+  ## then chats (presentation).
+  for join in player.data.joins:
+    let seat = int(join.player)
+    if seat in 0 .. 1 and tickOfTime(join.time) == tick:
+      sim.seats[seat].joined = true
+      sim.seats[seat].connected = true
   var stream: array[2, seq[uint8]]
   for input in player.data.inputs:
     if tickOfTime(input.time) != tick:
