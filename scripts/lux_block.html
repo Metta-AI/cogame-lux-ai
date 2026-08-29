@@ -11,6 +11,14 @@
      performs those deletions from the starter mount, so the fork is
      reproducible and reviewable.
 
+     That script's PATCH list also carries ONE correction to the inherited
+     CSS: `#scorebug`'s center (clock) grid track was a bare `auto`, so a band
+     narrower than the clock's own min-content width overflowed the grid and
+     put the RIGHT PLATE entirely outside #stage. The 360px featured iframe is
+     exactly that case — a square board pillarboxes to a ~118px stage and the
+     clock alone measures ~108px — so the track now floors at 0 and the clock
+     clips (max-width + ellipsis) instead of shoving a plate off the frame.
+
      Nothing here touches the transport band. `relayout()` still owns
      --hudscale, --topband and --band on :root; the endcard still stops at
      bottom: var(--band, 0px) and is still dismissed by every seek; and every
@@ -315,6 +323,9 @@ button.beat-marker {
   font-size: calc(7.5 * var(--u));
   color: var(--paper-dim);
   white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 #stage.tiny #cyclebar .cyc .num { display: none; }
 #stage.tiny #researchrail .rr { height: calc(5 * var(--u)); }
