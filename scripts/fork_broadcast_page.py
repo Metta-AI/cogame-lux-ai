@@ -217,6 +217,56 @@ PATCH = [
      "      core.panByMap(stepX * step, stepY * step);\n"
      "    }\n",
      ""),
+    # The scorebug band must fit inside its own width at EVERY stage width.
+    # The inherited grid floors its two side tracks at 0 but leaves the center
+    # (clock) track a bare `auto` = minmax(min-content, auto). A square board
+    # pillarboxes to a ~118px stage in the 360px featured iframe, the clock's
+    # own min-content is ~108px, so the grid overflowed and the RIGHT PLATE's
+    # box landed entirely outside #stage — the exact thing ci.yml's worst-case
+    # chrome fixture gates on. Floor the center track too and let the clock
+    # clip instead: it is the band's compressible element, never the one that
+    # decides the band's width.
+    ("     room there actually is, instead of an arbitrary hard cap. */\n"
+     "  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);\n",
+     "     room there actually is, instead of an arbitrary hard cap.\n"
+     "\n"
+     "     The CENTER track needs the same floor of 0. A bare `auto` is\n"
+     "     minmax(min-content, auto), so once the band is narrower than the clock's\n"
+     "     own min-content width the grid OVERFLOWS: the two side tracks are already\n"
+     "     at 0, the clock keeps its min-content width, and the right-hand track\n"
+     "     starts PAST the band's content box — i.e. the right plate lands entirely\n"
+     "     outside #stage. That is not hypothetical at the 360px floor: a square\n"
+     "     board pillarboxes to a ~118px stage there, and the clock alone measures\n"
+     "     ~108px, so `auto` put the right plate's box exactly on the stage's right\n"
+     "     edge. minmax(0,auto) keeps all three tracks inside the band at every\n"
+     "     width; the clock clips (see .clock-col/.clock .time) instead of shoving a\n"
+     "     plate off the composition. */\n"
+     "  grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);\n"),
+    ("  gap: calc(3 * var(--u));\n  padding-top: calc(1 * var(--u));\n}\n",
+     "  gap: calc(3 * var(--u));\n  padding-top: calc(1 * var(--u));\n"
+     "  /* Follows the center track down (see #scorebug/.clock-col) — the clock is\n"
+     "     the band's most compressible element, never the one that decides the\n"
+     "     band's width. Without this bound the pill keeps its content width past\n"
+     "     the track edge and the lines below never reach their ellipsis. */\n"
+     "  max-width: 100%;\n}\n"),
+    ("  text-shadow: 0 calc(2 * var(--u)) 0 var(--ink);\n"
+     "  font-variant-numeric: tabular-nums;\n}\n",
+     "  text-shadow: 0 calc(2 * var(--u)) 0 var(--ink);\n"
+     "  font-variant-numeric: tabular-nums;\n"
+     "  /* One line, clipped. Wrapping here would grow the band, and --topband is\n"
+     "     what the board's height is fitted around. */\n"
+     "  white-space: nowrap;\n  max-width: 100%;\n"
+     "  overflow: hidden;\n  text-overflow: ellipsis;\n}\n"),
+    ("  color: var(--paper-dim);\n  white-space: nowrap;\n}\n.clock.tiebreak-warn",
+     "  color: var(--paper-dim);\n  white-space: nowrap;\n"
+     "  max-width: 100%;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"
+     "}\n.clock.tiebreak-warn"),
+    ("  align-items: center;\n  gap: calc(4 * var(--u));\n}\n",
+     "  align-items: center;\n  gap: calc(4 * var(--u));\n"
+     "  /* The center grid track floors at 0 (see #scorebug), so the column must be\n"
+     "     allowed to follow it down instead of holding the band open at its own\n"
+     "     min-content width. */\n"
+     "  min-width: 0;\n}\n"),
 ]
 
 SPLICE_BANNER = "     PAINTBALL additions to the inherited coworld-ctf chrome"

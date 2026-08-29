@@ -299,6 +299,47 @@ suite "lux replay":
     for kind in beatKinds:
       check kind in ["dusk", "research", "citylost", "end"]
 
+  test "half speed is a replay-only crawl":
+    ## The fleet-wide 1/2x replay speed: command '5' selects
+    ## ReplayHalfSpeedIndex, the chrome shows 0.5, and playback spends one
+    ## turn every OTHER frame (halfPhase parity) outside lulls.
+    var config = fixtureConfig(seed = 7)
+    config.maxTurns = 20
+    let recorded = record(config, dir / "halfspeed.replay")
+    var runtime = initReplayRuntime(
+      parseLuxReplay(readFile(recorded.path)), mismatchQuit = true,
+      gameEventLoggingEnabled = false)
+    runtime.player.skipLulls = false
+
+    ## '5' selects the sentinel; the chrome speed is 0.5; the integer step
+    ## budget clamps to 1x (live-loop safety).
+    runtime.player.applyReplayCommand(runtime.sim, '5')
+    check runtime.player.speedIndex == ReplayHalfSpeedIndex
+    check runtime.player.replayDisplaySpeed() == 0.5
+    check runtime.player.replaySpeed() == 1
+
+    ## Two frames advance exactly ONE tick between them.
+    let before = runtime.sim.tickCount
+    runtime.player.advanceReplayPlayback(runtime.sim)
+    runtime.player.advanceReplayPlayback(runtime.sim)
+    check runtime.sim.tickCount == before + 1
+
+    ## The speed ladder: '+' from 1/2x lands on 1x, '-' from 1x lands back on
+    ## 1/2x, and 1/2x is the floor. The chrome's value characters land on
+    ## their PlaybackSpeeds entries.
+    runtime.player.applyReplayCommand(runtime.sim, '+')
+    check runtime.player.speedIndex == 0
+    runtime.player.applyReplayCommand(runtime.sim, '-')
+    check runtime.player.speedIndex == ReplayHalfSpeedIndex
+    runtime.player.applyReplayCommand(runtime.sim, '-')
+    check runtime.player.speedIndex == ReplayHalfSpeedIndex
+    for (command, index) in [('1', 0), ('2', 1), ('4', 2), ('8', 3), ('6', 4)]:
+      runtime.player.applyReplayCommand(runtime.sim, command)
+      checkpoint("command " & command)
+      check runtime.player.speedIndex == index
+      check runtime.player.replayDisplaySpeed() ==
+        float(PlaybackSpeeds[index])
+
   test "strict-UTF-8 replay parse with a 4-byte emoji on EVERY cap":
     ## Every capped field filled to exactly its cap with a 4-byte codepoint, and
     ## non-ASCII policy labels, then read back through the Python summariser
