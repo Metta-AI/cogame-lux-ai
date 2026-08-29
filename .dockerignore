@@ -1,0 +1,66 @@
+# Docker build context exclusions. ONE file, read by BOTH images in this repo:
+# `Dockerfile` (the game + player image) and `Dockerfile.replay-viewer` (the
+# wasm bundle `tools/build_replay_viewer.sh` builds).
+#
+# ---------------------------------------------------------------------------
+# THE ONE THAT BITES: nim.cfg
+# ---------------------------------------------------------------------------
+# Both Dockerfiles do this, in this order:
+#
+#     WORKDIR /workspace/lux
+#     COPY nimby.lock .
+#     RUN nimby --global sync nimby.lock      # <-- WRITES /workspace/lux/nim.cfg
+#     COPY . .                                # <-- overwrites it
+#
+# `nimby --global sync` does not only populate ~/.nimby/pkgs; it writes the
+# resulting `--path:` lines into the WORKING DIRECTORY's nim.cfg ("# Created by
+# Nimby", one `--path:"/root/.nimby/pkgs/<pkg>/src"` per dependency). That
+# generated file is the only thing that puts bitworld & co. on the container's
+# search path -- the Nim install's own config carries stdlib paths only.
+#
+# `nim.cfg` is .gitignore'd, so a fresh checkout has none and `COPY . .` leaves
+# the generated one alone. A DEVELOPER's checkout has one, holding absolute
+# paths into THEIR home directory, and `COPY . .` overwrites the generated file
+# with it. Every path in it is then missing inside the container and the build
+# dies on the first dependency import:
+#
+#     /workspace/lux/src/lux/global.nim(22, 16)
+#       Error: cannot open file: bitworld/spriteprotocol
+#
+# CI never sees this (checkout@v5 gives it a clean tree, and the test job
+# regenerates nim.cfg from the runner's own package tree), so the failure is
+# local-only: it hits exactly the developer running ./tools/build_replay_viewer.sh
+# on a machine that has ever built this repo natively.
+nim.cfg
+
+# ---------------------------------------------------------------------------
+# The rest of .gitignore: build products of a NATIVE host build. A macOS
+# nimcache or Mach-O binary in an amd64 Linux context is at best dead weight
+# and at worst a stale artifact the build might not overwrite.
+# ---------------------------------------------------------------------------
+# (Docker's patterns are anchored at the context root and are NOT implicitly
+# recursive the way git's are, so anything .gitignore matches at any depth
+# needs an explicit `**/` here.)
+dist/
+replay-viewer/dist/
+**/nimcache/
+**/.nimcache*
+**/*.exe
+lux-ai
+lux-ai-player
+
+# ---------------------------------------------------------------------------
+# Machine-local noise that is not in .gitignore because it never lands in the
+# repo root of a clean checkout, but is present on a working machine.
+# ---------------------------------------------------------------------------
+.git
+.claude
+**/node_modules/
+**/__pycache__/
+**/*.py[cod]
+**/.DS_Store
+
+# CI/agent scratch written into the repo root by the viewer smoke harness.
+viewer-smoke.png
+viewer-smoke.json
+fixture-out/

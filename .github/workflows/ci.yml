@@ -431,10 +431,11 @@ jobs:
               {k: v for k, v in fit.items() if k != "detail"}, sort_keys=True))
           for frame in fit["detail"]:
               print("  %dpx: stage %s  band %s  %d commander lines, "
-                    "%d runes each" % (
+                    "%d runes each  bands %s" % (
                         frame["width"], frame["stage"], frame["band"],
                         len(frame["notes"]),
-                        frame["notes"][0]["runes"] if frame["notes"] else 0))
+                        frame["notes"][0]["runes"] if frame["notes"] else 0,
+                        frame.get("bands", {})))
           problems = []
           if fit["note_runes"] != 160:
               problems.append("the fixture fed %d runes, not MaxNoteRunes=160"
@@ -445,6 +446,13 @@ jobs:
           for key in ("short", "outside", "clipped"):
               if fit[key]:
                   problems.append("%d commander line(s) %s" % (fit[key], key))
+          # A band whose reservation no longer matches its measured height is
+          # painting over the board. It is invisible to every box check above,
+          # so it gets its own named gate rather than riding in `failures`.
+          if fit.get("bands_stale"):
+              problems.append("%d reserved band(s) no longer match the chrome "
+                              "they reserve for (--topband/--band stale)"
+                              % fit["bands_stale"])
           if fit["chrome_off_stage"]:
               problems.append("%d chrome box(es) entirely outside #stage"
                               % fit["chrome_off_stage"])
