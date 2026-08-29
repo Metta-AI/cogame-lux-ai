@@ -8,59 +8,80 @@ import helpers
 
 const GvScript = "tools/ci/check_gameversion.sh"
 
+type GvEntry = tuple[version, rule: string]
+
 proc gvGit(repo, args: string) =
-  ## A git command in the throwaway fixture repo. Identity is passed per-call so
-  ## the test does not depend on the runner having a global git config.
+  ## A git command in the throwaway fixture repo. Identity, signing and hooks
+  ## are neutralised per call: the fixture must not inherit whatever the
+  ## developer's global git config does, and `commit.gpgsign = true` on a
+  ## machine with no usable key otherwise aborts the commit mid-test.
   let (output, code) = execCmdEx(
-    "git -c user.email=t@example.com -c user.name=t -c init.defaultBranch=main " &
-      args, workingDir = repo)
+    "git -c user.email=t@example.com -c user.name=t -c init.defaultBranch=main" &
+      " -c commit.gpgsign=false -c core.hooksPath=/nonexistent-hooks " & args,
+    workingDir = repo)
   if code != 0:
     raise newException(OSError, "git " & args & " failed:\n" & output)
 
-proc gvSimTypes(repo, version, rule: string) =
-  ## A minimal sim_types.nim at the SAME path the real one lives at, carrying
-  ## the same prepend-only changelog shape the script parses.
+proc gvSimTypes(repo, version: string, entries: seq[GvEntry]) =
+  ## A minimal sim_types.nim at the SAME path the real one lives at, in the
+  ## same prepend-only changelog shape the script parses: newest entry first,
+  ## `##`-separated, each headline wrapped across two lines.
   createDir(repo / "src" / "lux")
-  writeFile(repo / "src" / "lux" / "sim_types.nim", """
-const
-  GameVersion* = "$1"
-    ## PREPEND-ONLY changelog in the `GVnn (rule): HEADLINE` shape.
-    ##
-    ## GV$1 ($2): headline for the $2 rules, wrapped across two lines to
-    ## exercise the continuation the real changelog uses.
+  var body = "const\n  GameVersion* = \"" & version & "\"\n" &
+    "    ## PREPEND-ONLY changelog in the `GVnn (rule): HEADLINE` shape.\n"
+  for e in entries:
+    body.add("    ##\n    ## GV" & e.version & " (" & e.rule & "): headline " &
+      "for the " & e.rule & " rules, wrapped across\n    ## two lines to " &
+      "exercise the continuation the real changelog uses.\n")
+  body.add("\n  GameName* = \"lux-ai\"\n")
+  writeFile(repo / "src" / "lux" / "sim_types.nim", body)
 
-  GameName* = "lux-ai"
-""" % [version, rule])
-
-proc gvRun(repo, base, head: string): tuple[output: string, exitCode: int] =
+proc gvRun(repo: string, args: varargs[string]):
+    tuple[output: string, exitCode: int] =
   ## Run the script under test, by absolute path, with `repo` as its cwd.
-  execCmdEx(quoteShell(repoRoot() / GvScript) & " " & quoteShell(base) & " " &
-    quoteShell(head), workingDir = repo)
+  ## Variadic on purpose: the ONE-argument form is what ci.yml and AGENTS.md
+  ## actually invoke, and it is only covered if a test can express it.
+  var cmd = quoteShell(repoRoot() / GvScript)
+  for a in args:
+    cmd.add(" " & quoteShell(a))
+  execCmdEx(cmd, workingDir = repo)
 
-proc gvCommit(repo, version, rule, message: string) =
-  gvSimTypes(repo, version, rule)
+proc gvCommit(repo, version: string, entries: seq[GvEntry], message: string) =
+  gvSimTypes(repo, version, entries)
   gvGit(repo, "add -A")
   gvGit(repo, "commit -q -m " & quoteShell(message))
 
-proc gvFixtureRepo(): string =
+proc gvFixturePath(): string =
+  ## Named separately from the build so the caller can arm its cleanup BEFORE
+  ## construction starts; a raise inside the build would otherwise leak the
+  ## directory, and the pid-keyed name means no later run reclaims it.
+  getTempDir() / ("lux_gv_fixture_" & $getCurrentProcessId())
+
+proc gvBuildFixture(result: string) =
   ## A throwaway repo with three claims on the version number:
-  ##   v1      GV1 "first"      the base
-  ##   v2      GV2 "second"     a clean bump on top of it
-  ##   collide GV1 "different"  a SECOND branch spending GV1 on another rule
-  result = getTempDir() / ("lux_gv_fixture_" & $getCurrentProcessId())
+  ##   v9      GV9  "first"      the base
+  ##   v10     GV10 "second"     a clean bump on top of it
+  ##   collide GV9  "different"  a SECOND branch spending GV9 on another rule
+  ##
+  ## 9 and 10 rather than 1 and 2 on purpose: they pin that the comparison is
+  ## NUMERIC (lexically "10" sorts below "9") and that looking up GV9 does not
+  ## match the GV10 entry on a prefix. v10 carries two entries, which is what
+  ## exercises the scan's entry terminator -- the real file grows a second
+  ## entry at the first bump, and nothing else here would cover that.
   removeDir(result)
   createDir(result)
   gvGit(result, "init -q .")
-  gvCommit(result, "1", "first", "base")
-  gvGit(result, "branch -q v1")
-  gvCommit(result, "2", "second", "bump")
-  gvGit(result, "branch -q v2")
-  gvGit(result, "checkout -q -b collide v1")
-  gvCommit(result, "1", "different", "collide")
+  gvCommit(result, "9", @[("9", "first")], "base")
+  gvGit(result, "branch -q v9")
+  gvCommit(result, "10", @[("10", "second"), ("9", "first")], "bump")
+  gvGit(result, "branch -q v10")
+  gvGit(result, "checkout -q -b collide v9")
+  gvCommit(result, "9", @[("9", "different")], "collide")
 
 proc gvConstFile(): string =
   ## The path the script says it reads. This is the value that rotted: the
-  ## script arrived from the starter naming `src/ctf/sim_types.nim`.
+  ## script arrived from the starter byte-for-byte, naming the starter's own
+  ## `src/ctf/sim_types.nim`.
   let script = readRepoFile(GvScript)
   const marker = "CONST_FILE=\""
   let at = script.find(marker)
@@ -133,56 +154,128 @@ suite "lux gameversion":
       let (output, code) = gvRun(repoRoot(), "HEAD", "HEAD")
       checkpoint(output)
       check code == 0
-      check ("GV" & GameVersion & " unchanged") in output
-      # The headline, not the declaration line: reading the declaration would
-      # make the collision check below compare a string with itself.
-      check ("GV" & GameVersion & " (") in output
+      check "unchanged from the base" in output
+      # Keyed on the version the SCRIPT reports, which it reads from COMMITTED
+      # content -- not on the compiled-in `GameVersion`, which is read from the
+      # working tree and diverges from it for the whole window between editing
+      # the const and committing it. That window is the documented bump flow,
+      # and coupling to it would make this the one test that goes red mid-bump.
+      check " = GV" in output
+      let reported = output.split(" = GV")[1].split(' ')[0]
+      check ("GV" & reported & " (") in output
       check "GameVersion* =" notin output
 
   test "check_gameversion.sh passes a clean bump and catches every drift":
-    ## The four verdicts, against a throwaway repo this test builds. Hermetic:
-    ## it needs the `git` binary but none of this repo's history, so it still
-    ## covers the path above even from an exported tree.
-    let repo = gvFixtureRepo()
-    defer: removeDir(repo)
+    ## Every verdict, against a throwaway repo this test builds. Hermetic: it
+    ## needs the `git` binary but none of this repo's history, so it still
+    ## covers CONST_FILE even from an exported tree with no .git.
+    let repo = gvFixturePath()
+    try:
+      gvBuildFixture(repo)
+      block sameNumberSameRule:
+        let (output, code) = gvRun(repo, "v9", "v9")
+        checkpoint(output)
+        check code == 0
+        check "no rule change claimed" in output
 
-    block sameNumberSameRule:
-      let (output, code) = gvRun(repo, "v1", "v1")
-      checkpoint(output)
-      check code == 0
-      check "no rule change claimed" in output
+      block cleanBump:
+        let (output, code) = gvRun(repo, "v9", "v10")
+        checkpoint(output)
+        check code == 0
+        check "GV10 is above the base's GV9" in output
 
-    block cleanBump:
-      let (output, code) = gvRun(repo, "v1", "v2")
-      checkpoint(output)
-      check code == 0
-      check "GV2 is above the base's GV1" in output
+      block sameNumberDifferentRule:
+        # The collision the script exists for: two branches, one number, two
+        # rules.
+        let (output, code) = gvRun(repo, "v9", "collide")
+        checkpoint(output)
+        check code == 1
+        check "already spent" in output
 
-    block sameNumberDifferentRule:
-      # The collision the script exists for: two branches, one number, two rules.
-      let (output, code) = gvRun(repo, "v1", "collide")
-      checkpoint(output)
-      check code == 1
-      check "already spent" in output
+      block behindTheBase:
+        # Also pins that the compare is numeric: lexically "9" > "10".
+        let (output, code) = gvRun(repo, "v10", "v9")
+        checkpoint(output)
+        check code == 1
+        check "BELOW the base's GV10" in output
 
-    block behindTheBase:
-      let (output, code) = gvRun(repo, "v2", "v1")
-      checkpoint(output)
-      check code == 1
-      check "BELOW the base's GV2" in output
+      block theOneArgumentFormCiAndAgentsMdUse:
+        # ci.yml and AGENTS.md both invoke the script with ONE argument and let
+        # the head default to HEAD. Nothing else here exercises that default,
+        # and getting it wrong (defaulting to $BASE, say) makes every real
+        # invocation a self-compare that passes on every collision -- the gate
+        # failing OPEN, silently, which is the failure this script exists to end.
+        gvGit(repo, "checkout -q collide")
+        let (output, code) = gvRun(repo, "v9")
+        checkpoint(output)
+        check code == 1
+        check "already spent" in output
 
-    block noChangelogEntryForTheNumber:
-      # A bump with no headline leaves nothing to diff. Refusing beats passing
-      # blind, which is what comparing two empty headlines would do.
-      gvGit(repo, "checkout -q -b orphan v2")
-      writeFile(repo / "src" / "lux" / "sim_types.nim",
-        "const\n  GameVersion* = \"9\"\n    ## GV2 (second): stale headline.\n")
-      gvGit(repo, "add -A")
-      gvGit(repo, "commit -q -m orphan")
-      let (output, code) = gvRun(repo, "v2", "orphan")
-      checkpoint(output)
-      check code == 1
-      check "changelog entry" in output
+      block twoEntriesClaimingOneNumber:
+        # A merge resolved by keeping BOTH entries, the base's left on top.
+        # Reading only the first match would hand back the base's headline for
+        # both refs, compare equal, and wave the collision through.
+        gvGit(repo, "checkout -q -b twoentries v9")
+        gvCommit(repo, "9", @[("9", "first"), ("9", "different")], "two entries")
+        let (output, code) = gvRun(repo, "v9", "twoentries")
+        checkpoint(output)
+        check code == 1
+        check "two changelog entries claim the same GameVersion" in output
+
+      block aBareBlankLineInsideTheBlock:
+        # Nim accepts a blank line in the doc comment. It must not read as the
+        # end of the changelog, or a valid entry below it goes invisible and
+        # every PR fails on something the author cannot fix from their branch.
+        gvGit(repo, "checkout -q -b blankline v9")
+        writeFile(repo / "src" / "lux" / "sim_types.nim",
+          "const\n  GameVersion* = \"9\"\n    ## preamble.\n\n" &
+          "    ## GV9 (first): a headline below a bare blank line.\n")
+        gvGit(repo, "add -A")
+        gvGit(repo, "commit -q -m blankline")
+        let (output, code) = gvRun(repo, "v9", "blankline")
+        checkpoint(output)
+        check "GV9 (first): a headline below a bare blank line." in output
+        check "changelog entry" notin output
+
+      block aSecondQuotedNumberOnTheDeclarationLine:
+        # `grep -o` prints EVERY match on the line, not just the first, so an
+        # inline `## was "8"` makes the version a TWO-LINE string that flows
+        # into awk, into the numeric comparisons and into the operator's error
+        # text. Nim accepts a trailing comment there, so nothing forbids it.
+        gvGit(repo, "checkout -q -b trailing v9")
+        writeFile(repo / "src" / "lux" / "sim_types.nim",
+          "const\n  GameVersion* = \"9\"  ## was \"8\"\n" &
+          "    ## GV9 (first): a headline after a second quoted number.\n")
+        gvGit(repo, "add -A")
+        gvGit(repo, "commit -q -m trailing")
+        let (output, code) = gvRun(repo, "v9", "trailing")
+        checkpoint(output)
+        check code == 1              # the headline differs: a real collision
+        check "= GV9 \u2014" in output   # the version is exactly "9", one line
+        check "awk:" notin output
+
+      block noChangelogEntryForTheNumber:
+        # A bump with no headline leaves nothing to diff, and would sail
+        # through on the number alone. Refusing beats passing blind.
+        gvGit(repo, "checkout -q -b orphan v10")
+        writeFile(repo / "src" / "lux" / "sim_types.nim",
+          "const\n  GameVersion* = \"11\"\n    ## GV10 (second): stale.\n")
+        gvGit(repo, "add -A")
+        gvGit(repo, "commit -q -m orphan")
+        let (output, code) = gvRun(repo, "v10", "orphan")
+        checkpoint(output)
+        check code == 1
+        check "changelog entry" in output
+
+      block aRefThatDoesNotResolve:
+        # `git show` reports a bad ref and a missing path identically once its
+        # stderr is dropped; the operator needs to know which one happened.
+        let (output, code) = gvRun(repo, "no-such-ref", "v9")
+        checkpoint(output)
+        check code == 1
+        check "does not resolve" in output
+    finally:
+      removeDir(repo)
 
   test "the executable bits coworld build and ci.yml hard-require":
     for path in ["tools/build_replay_viewer.sh", "tools/ci/docker_smoke.sh"]:
