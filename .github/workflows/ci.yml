@@ -156,6 +156,43 @@ jobs:
           exit "${fail}"
 
   # ---------------------------------------------------------------------
+  # The GameVersion gate. AGENTS.md documents check_gameversion.sh as THE way
+  # to check a bump, but nothing ran it -- which is exactly how it sat broken
+  # from the day the repo was scaffolded, still naming the starter's
+  # src/ctf/sim_types.nim and so exiting 1 on an unreadable file every time.
+  # A checker no job invokes is a checker nobody notices has stopped checking.
+  # ---------------------------------------------------------------------
+  gameversion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # The check reads the const file out of TWO refs, so it needs the base
+      # branch as well as this one; the default shallow fetch has only this one.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: GameVersion does not collide with the base branch
+        env:
+          # PR: the branch it merges into. push / dispatch: the default
+          # branch, which on a push to main makes this a no-op self-compare.
+          BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          # Invoked by path, not through `bash`, for the same reason as the
+          # other helpers: `bash SCRIPT` ignores the exec bit, so a 0644 copy
+          # would pass here and fail wherever AGENTS.md says to run it.
+          test -x tools/ci/check_gameversion.sh || {
+            echo "::error::tools/ci/check_gameversion.sh must be committed executable (mode 100755)."
+            echo "::error::Fix with: git update-index --chmod=+x tools/ci/check_gameversion.sh"
+            exit 1; }
+          # Guarantee the remote-tracking ref the script is handed exists, and
+          # is this run's view of the base -- not whatever checkout left behind.
+          git fetch --no-tags --quiet origin \
+            "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          ./tools/ci/check_gameversion.sh "origin/${BASE_REF}"
+
+  # ---------------------------------------------------------------------
   # Packaging smoke: the production image builds, and one real episode runs
   # end to end in raw docker with the certification fixture's seat mix.
   # ---------------------------------------------------------------------
