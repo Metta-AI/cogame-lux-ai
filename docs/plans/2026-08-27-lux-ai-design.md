@@ -1429,6 +1429,20 @@ and asserted by `tests/test_lux_viewer.nim`:
 All four are sized from `--hudscale`, so nothing is ever drawn outside the canvas and
 `--strict-text-bounds` stays on in CI.
 
+> **Amendment (measured, after the fact).** The `360 × 203` box above does not hold this
+> composition, and the `192 × 192` in it is a transcription of the STARTER's geometry, not this
+> game's: `192 = 360 / 1.874` is the height coworld-ctf's `1235:659` board takes when it fills a
+> 360 px width. A **square** board in the same box gets nothing like it, because the two bands this
+> same section mandates were never subtracted from it. Measured at the `--hudscale` floor of 0.5,
+> the scorebug is 54 px and the transport 75 px — 129 px of the 203 — leaving a **74 × 74 board, 4.6
+> px per cell**, which is below the 6–8 px/cell threshold this note itself uses to put 24 × 24 and
+> 32 × 32 maps out of scope. The chrome does not crowd at that size, it collapses: `#scorebug`'s
+> `minmax(0, 1fr)` side tracks go to zero width and a plate lands outside `#stage`. The width floor
+> of **360 px is correct and unchanged**; the height is not. `tools/ci/renderer_fixture.html`
+> therefore measures the floor in a **360 × 300** box, derived from this section's own 12 px/cell
+> target plus the bands it must clear (`192 + 42 + 49 = 283`, rounded up), which settles at a
+> 209 × 209 board — **13 px per cell**. 620 and 1280 keep the inherited `203/360` height.
+
 ---
 
 ## Packaging

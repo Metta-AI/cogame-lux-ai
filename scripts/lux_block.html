@@ -445,6 +445,59 @@ button.beat-marker {
       strip.id = 'fuelstrip';
       stage.appendChild(strip);
     }
+    luxWatchTopBand();
+  }
+
+  // ---- keep --topband honest ----------------------------------------------
+  // `relayout()` reserves the top band by MEASURING #scorebug, and it is the
+  // inherited chrome's own ResizeObserver on #viewport that re-runs it. That
+  // observer never fires for what this block just did: the band's own CONTENT
+  // changed while #viewport stayed exactly the same size.
+  //
+  // The ordering is the whole defect. In the inherited frame loop
+  // `syncBoardAspect(s)` -> `relayout()` runs at the TOP of onFrame; this
+  // block's `LuxChrome.frame` hook runs at the BOTTOM. So the one relayout
+  // that a replay ever gets is the one measuring an EMPTY scorebug -- 23 px --
+  // and the plates, cycle bar and research rail this block then appends take
+  // the real band to 42-54 px (65 px at desktop hudscale). From the second
+  // frame on `syncBoardAspect` early-returns on an unchanged aspect, so
+  // nothing re-runs the layout and the 23 px reservation is what ships: the
+  // populated scorebug spends the whole replay painted over the top ~31 px of
+  // the board, and over the first commander line in the feed.
+  //
+  // So watch the band itself. The observer re-runs the layout through the
+  // inherited page's own public handle -- the `resize` listener `relayout()`
+  // registers on `window` -- and goes quiet the moment the reservation and the
+  // measurement agree, which is the exact invariant that was broken.
+  //
+  // The guard is not optional. `relayout()` sets `--hudscale` and the stage
+  // width FROM the bands, and #scorebug is `left:0;right:0` inside the stage,
+  // so every relayout resizes the very box being observed. Re-firing on any
+  // size change at all is an unbounded loop; re-firing only while
+  // `--topband != scorebug.offsetHeight` terminates as soon as relayout has
+  // done its job. LUX_TOPBAND_PASSES is a backstop for a container whose own
+  // width is still animating underneath us, not the termination condition.
+  var LUX_TOPBAND_PASSES = 8;
+  var topBandWatched = false;
+  function luxWatchTopBand() {
+    if (topBandWatched) return;
+    var bug = luxId('scorebug');
+    if (!bug) return;
+    topBandWatched = true;
+    var passes = 0;
+    function reconcile() {
+      var root = document.documentElement;
+      var reserved = parseFloat(
+        getComputedStyle(root).getPropertyValue('--topband')) || 0;
+      if (Math.abs(bug.offsetHeight - reserved) < 0.5) { passes = 0; return; }
+      if (++passes > LUX_TOPBAND_PASSES) return;
+      window.dispatchEvent(new Event('resize'));
+    }
+    // Populating the band above is itself the first mismatch; reconcile it
+    // now rather than waiting for the observer's first delivery.
+    reconcile();
+    if (!window.ResizeObserver) return;
+    new ResizeObserver(reconcile).observe(bug);
   }
 
   function luxRenderPlates(s) {

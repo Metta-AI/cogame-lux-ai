@@ -23,7 +23,8 @@
   (the particle-worlds 2026-08-26 scar) — then drives the real page's own text
   path with a full-cap 160-rune note on both seats, eight cities in the fuel
   strip, a research rail crossing 200, a deep-night frame and a citylost
-  banner, at 360 / 620 / 1280 px.
+  banner, at 360 / 620 / 1280 px wide (360 x 300, 620 x 350, 1280 x 722 --
+  see "WHY THE FLOOR BOX IS 360 x 300" below).
 
   ALL of this game's chrome text is DOM, not canvas, so the harness's
   `canvas_text` tally is structurally 0 and `--strict-text-bounds` gates
@@ -48,12 +49,61 @@
     node tools/ci/viewer_smoke.mjs --bundle dist/static-replay-viewer \
       --replay <anything> --url http://127.0.0.1:PORT/renderer_fixture.html \
       --strict-text-bounds
+
+  WHY THE FLOOR BOX IS 360 x 300 AND NOT 360 x 203
+  ------------------------------------------------
+  The WIDTH floor is real and unchanged: "the embedded featured-match iframe is
+  ~360 px wide, so the chrome is checked AT 360 px" (the design note, "Legible
+  at 360 px"). The HEIGHT that used to sit under it -- `width * 203 / 360` --
+  was inherited from coworld-ctf, whose board is 1235:659, and it does not
+  survive contact with THIS game.
+
+  The note derives its legibility target as "16 x 16 renders at 12 px per cell
+  (192 x 192)" in a 360 x 203 box. That 192 is 360 / 1.874 -- the STARTER's
+  board aspect applied to the 360 px width. It is the height a 1.874:1 board
+  gets when it fills the width. A square board in a 203 px-tall box gets
+  nothing like it, because the same note also mandates two RESERVED bands that
+  the 192 never had subtracted from it: the scorebug above the board and the
+  transport below it, neither of which may ever overlap play.
+
+  Measured, at hudscale 0.5 (the clamp floor) in a 360 x 203 box:
+
+      scorebug  54 px   +   transport  75 px   =  129 px of the 203
+
+  which leaves a 74 x 74 board -- 4.6 px per cell. The note rules 24 x 24 and
+  32 x 32 maps OUT OF SCOPE at "8 px and 6 px per cell, where a unit chip, a
+  cargo pip and a city fuel ring stop reading", so 4.6 px/cell is well below
+  the game's own legibility floor. The chrome does not merely crowd at that
+  size, it collapses: #scorebug's `minmax(0, 1fr)` side tracks go to ZERO
+  width and the right-hand plate is pushed clean outside #stage, and the feed
+  (190 * --u = 95 px under `.tiny`) hangs 27 px off the stage's left edge.
+
+  There is no chrome tuning that fixes that -- the box cannot hold the
+  composition. So the height is derived from the note's own target instead of
+  from the starter's aspect: a 192 px board plus the bands it must clear.
+
+      192 (12 px/cell)  +  42 (scorebug)  +  49 (transport)  =  283
+
+  rounded up to 300, which settles at a 209 x 209 board -- 13 px per cell,
+  clearing the note's 12 px target -- with both bands honestly reserved and
+  both plates on the band with real width. 620 and 1280 keep the inherited
+  203/360 height: they are still the tightest boxes in which the composition
+  resolves at those widths, so they stay the worst case they were.
+
+  This mattered only once `relayout()` started re-running when the scorebug's
+  own size changes. Before that the reservation stayed frozen at the 23 px an
+  EMPTY scorebug measures, which is what made a 74 px board look like a 129 px
+  one here: the fixture was measuring a stage whose top band was a fiction.
 -->
 <script>
 (function () {
   'use strict';
 
-  var WIDTHS = [360, 620, 1280];
+  // [width, height] of each iframe the chrome is measured in. See "WHY THE
+  // FLOOR BOX IS 360 x 300" above: the widths are the design note's, the floor
+  // box's height is derived from the composition instead of from coworld-ctf's
+  // board aspect.
+  var BOXES = [[360, 300], [620, 350], [1280, 722]];
   // MaxNoteRunes (src/lux/sim_types.nim): the cap sanitizeNote enforces on
   // every `note` that reaches the replay. The band in the game block is sized
   // from this same number; if one moves without the other, the measurement
@@ -208,6 +258,9 @@
   // Two tiers, the same doctrine viewer_smoke.mjs applies to canvas text:
   //   GATED   the commander band — model-authored text, capped by the server.
   //           It must be full-length, unclipped and WHOLLY inside #stage.
+  //           The band RESERVATIONS (--topband/--band) are gated with it: a
+  //           reservation that no longer matches the chrome it reserves for
+  //           puts that chrome over the board, and no box test can see it.
   //   READ    the rest of the chrome (plates, event rows). A partial overlap
   //           is reported; only a box with no intersection at all is a
   //           failure, because a plate name that ellipsises at the true track
@@ -309,7 +362,45 @@
       }
     }
 
-    // 2. the rest of the chrome, read and reported.
+    // 2. the reserved bands must equal the bands that are actually there.
+    //
+    // GATED. `relayout()` reserves --topband/--band by MEASURING #scorebug and
+    // #transport, and the board is laid out BETWEEN them so that no chrome
+    // ever sits over play. If a band's content changes after the layout ran
+    // and nothing re-runs it, the reservation is a fiction: the band keeps its
+    // real height and paints over the top of the board -- and over the first
+    // commander line -- for the whole replay.
+    //
+    // Nothing else here can see that. Every other check measures a box against
+    // #stage, and an UNDER-reserved top band makes #stage taller than the
+    // composition needs, so no box lands outside it and all of them pass. This
+    // is the check that fails on a stale reservation: the shipped page held
+    // --topband at the 23 px an EMPTY scorebug measures while the populated one
+    // stood at 42-54 px (65 px at desktop hudscale).
+    var reserved = [
+      ['--topband', 'scorebug', doc.getElementById('scorebug')],
+      ['--band', 'transport', doc.getElementById('transport')]
+    ];
+    report.bands = {};
+    for (var b = 0; b < reserved.length; b++) {
+      var prop = reserved[b][0], name = reserved[b][1], el = reserved[b][2];
+      if (!el) {
+        report.failures.push(width + 'px: no #' + name + ' to measure ' +
+          prop + ' against');
+        continue;
+      }
+      var want = el.offsetHeight;
+      var got = parseFloat(win.getComputedStyle(doc.documentElement)
+        .getPropertyValue(prop)) || 0;
+      report.bands[name] = { reserved: got, measured: want };
+      if (Math.abs(got - want) > TOL) {
+        report.failures.push(width + 'px: ' + prop + ' reserves ' + got +
+          'px but #' + name + ' measures ' + want + 'px, so ' +
+          Math.round(Math.abs(want - got)) + 'px of it sits over the board');
+      }
+    }
+
+    // 3. the rest of the chrome, read and reported.
     var groups = [['feed-row', '#killfeed .feed-row'],
                   ['badge', '#killfeed .feed-row .badge'],
                   ['plate', '#scorebug .plate'],
@@ -341,10 +432,11 @@
     return report;
   }
 
-  function build(width, index) {
+  function build(box, index) {
+    var width = box[0];
     var host = document.createElement('iframe');
     host.width = width;
-    host.height = Math.round(width * 203 / 360);
+    host.height = box[1];
     document.body.appendChild(host);
     return fetch('./index.html').then(function (response) {
       return response.text();
@@ -416,7 +508,7 @@
     });
   }
 
-  Promise.all(WIDTHS.map(build)).then(function (reports) {
+  Promise.all(BOXES.map(build)).then(function (reports) {
     var summary = {
       note_runes: NOTE_RUNES,
       widths: reports.length,
@@ -427,6 +519,7 @@
       clipped: 0,
       chrome_outside: 0,
       chrome_off_stage: 0,
+      bands_stale: 0,
       failures: [],
       detail: reports
     };
@@ -442,11 +535,17 @@
         if (item.outside_stage) summary.chrome_outside += 1;
         if (item.off_stage) summary.chrome_off_stage += 1;
       });
+      Object.keys(report.bands || {}).forEach(function (name) {
+        var band = report.bands[name];
+        if (Math.abs(band.reserved - band.measured) > TOL) {
+          summary.bands_stale += 1;
+        }
+      });
       report.failures.forEach(function (f) { summary.failures.push(f); });
     });
-    if (summary.notes < 2 * WIDTHS.length) {
+    if (summary.notes < 2 * BOXES.length) {
       summary.failures.push('only ' + summary.notes + ' commander lines were ' +
-        'measured; two seats x ' + WIDTHS.length + ' widths is the minimum');
+        'measured; two seats x ' + BOXES.length + ' widths is the minimum');
     }
     // ONE line, last: viewer_smoke.mjs keeps the console tail in
     // viewer-smoke.json and ci.yml gates on this object.
