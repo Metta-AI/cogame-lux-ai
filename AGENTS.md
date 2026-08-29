@@ -22,6 +22,12 @@ CI runs the same check on every PR (the `gameversion` job in
 [.github/workflows/ci.yml](.github/workflows/ci.yml)), against the branch the PR
 merges into.
 
+Know what it does NOT cover. It catches one thing: two branches spending the
+same number on different rules. It cannot see that a rules change forgot to
+bump at all — nothing in the build ties a gameplay diff to a version bump — and
+it reads "behind" off the digits alone, so a branch that jumps a number is
+exempt from the check and spends that number permanently.
+
 The number alone cannot detect a collision between two branches — what
 distinguishes them is the RULE the number is attached to, which is why the
 script diffs the changelog headline and not the digits.

@@ -863,7 +863,8 @@ for the viewer — which is the whole reason the game lives in the starter's lan
 | `replay-viewer/config.nims`, `static_replay.js`, `static_replay_worker.js` | **fork: identifiers and the output name only** | the emscripten link flags and the Worker bootstrap (§Viewer) |
 | `replay-viewer/ctf_replay.nim` → `replay-viewer/lux_replay.nim` | **fork** | §Viewer |
 | `Dockerfile`, `Dockerfile.replay-viewer`, `tools/build_replay_viewer.sh`, `tools/wasm_replay_smoke.cjs`, `tools/expand_replay.nim`, `tools/extract_events.nim`, `tools/replay_summary.py`, `tools/record_fixture.sh`, `tools/tune_baselines.nim`, `nimby.lock`, `flake.nix`, `tests/config.nims` | **byte-for-byte apart from names/paths** | build, bundle and forensics wiring; `build_replay_viewer.sh` already carries the ecos `mkdir -p "$(dirname …)"` fix and the buildx / `--platform linux/amd64` handling |
-| `tools/ci/check_gameversion.sh`, `tools/ci/next_coworld_version.py` (+ its test) | **byte-for-byte** | version discipline |
+| `tools/ci/next_coworld_version.py` (+ its test) | **byte-for-byte** | version discipline |
+| `tools/ci/check_gameversion.sh` | **fork** (was byte-for-byte; see below) | version discipline. Copying it byte-for-byte is what shipped it reading the starter's `src/ctf/sim_types.nim`, so it never once ran here; it now reads `src/lux/sim_types.nim`, and its changelog scan is retargeted from the starter's inline trailing comment to this repo's doc-comment BLOCK |
 | `data/arena_floor.png`, `data/font.ttf`, `data/ascii.png`, `data/pallete.png`, `data/atlas/*`, `data/soldier_{red,blue}.png`, `data/soldier_{red,blue}_front.png`, `client/art/walls/{wall_h,wall_v}.jpg`, `client/art/lockerroom/{bg.jpg,red_*,blue_*}.webp` | **byte-for-byte** | real art (§Viewer → Art) |
 
 ### Deleted (with their tests, tools, docs and config surfaces), not disabled
