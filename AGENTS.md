@@ -18,6 +18,10 @@ vocabulary, and say what the number means and what it obsoletes. Check with:
 tools/ci/check_gameversion.sh origin/main
 ```
 
+CI runs the same check on every PR (the `gameversion` job in
+[.github/workflows/ci.yml](.github/workflows/ci.yml)), against the branch the PR
+merges into.
+
 The number alone cannot detect a collision between two branches — what
 distinguishes them is the RULE the number is attached to, which is why the
 script diffs the changelog headline and not the digits.
