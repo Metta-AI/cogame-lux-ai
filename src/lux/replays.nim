@@ -49,6 +49,11 @@ const
     ## The wall-clock stop, applied on BOTH sides by `sim.applyWallClockStop`
     ## before that turn's step (the particle-worlds r2 scar).
 
+  ReplayHalfSpeedIndex* = -1
+    ## speedIndex sentinel for 1/2x playback: one turn every other frame.
+    ## `replaySpeed()` clamps it back to `PlaybackSpeeds[0]` (1x), so only the
+    ## frame parity in `advanceReplayPlayback` ever runs slower than 1x.
+
 type
   Beat* = object
     ## A scrubber marker. A CLOSED set of four kinds, all bounded by
@@ -67,6 +72,11 @@ type
     looping*: bool
     skipLulls*: bool
     speedIndex*: int
+      ## Index into PlaybackSpeeds, or ReplayHalfSpeedIndex (-1) for the
+      ## replay-only 1/2x speed (one turn every other frame).
+    halfPhase*: bool
+      ## Frame parity while at 1/2x speed: turns advance only on the odd
+      ## frames, toggled once per advanceReplayPlayback frame.
     hashIndex*: int
     hashMismatchTick*: int
     hashValidationFailed*: bool
@@ -110,7 +120,14 @@ proc writeInputPacket*(
       keys: value))
 
 proc replaySpeed*(player: ReplayPlayer): int =
+  ## The integer per-frame step budget (1 while at 1/2x — the fractional pace
+  ## lives in advanceReplayPlayback's frame parity).
   PlaybackSpeeds[clamp(player.speedIndex, 0, PlaybackSpeeds.high)]
+
+proc replayDisplaySpeed*(player: ReplayPlayer): float =
+  ## The speed the chrome shows: 0.5 at half speed, else the integer speed.
+  if player.speedIndex == ReplayHalfSpeedIndex: 0.5
+  else: float(player.replaySpeed())
 
 proc replayMaxTick*(player: ReplayPlayer): int = player.maxTick
 
@@ -376,10 +393,35 @@ proc initReplayPlayer*(data: codec.ReplayData): ReplayPlayer =
     result.maxTick = max(result.maxTick, int(hash.tick))
   result.runScan()
 
+proc applySpeedCommand*(speedIndex: var int, command: char) =
+  ## One command from the shared chrome's speed→command map, which sends the
+  ## SPEED VALUE's character ('6' is 16x), not an index. '5' selects the 1/2x
+  ## replay crawl (ReplayHalfSpeedIndex), and '-' floors there.
+  case command
+  of '+', '=':
+    speedIndex = min(speedIndex + 1, PlaybackSpeeds.high)
+  of '-', '_':
+    speedIndex = max(speedIndex - 1, ReplayHalfSpeedIndex)
+  of '5':
+    speedIndex = ReplayHalfSpeedIndex
+  of '1':
+    speedIndex = 0
+  of '2':
+    speedIndex = 1
+  of '4':
+    speedIndex = 2
+  of '8':
+    speedIndex = 3
+  of '6':
+    speedIndex = 4
+  else:
+    discard
+
 proc applyReplayCommand*(
   player: var ReplayPlayer, sim: var SimServer, command: char
 ) =
-  ## The starter's transport vocabulary, unchanged.
+  ## The starter's transport vocabulary; the speed characters are the shared
+  ## chrome's speed→command map (applySpeedCommand above).
   case command
   of ' ': player.playing = not player.playing
   of 'r': player.seekReplay(sim, player.replayStartTick())
@@ -388,12 +430,8 @@ proc applyReplayCommand*(
   of 'e': player.seekReplay(sim, player.maxTick)
   of 'l': player.looping = not player.looping
   of 'f': player.skipLulls = not player.skipLulls
-  of '<':
-    player.speedIndex = max(0, player.speedIndex - 1)
-  of '>':
-    player.speedIndex = min(PlaybackSpeeds.high, player.speedIndex + 1)
-  of '0', '1', '2', '3', '4':
-    player.speedIndex = clamp(ord(command) - ord('0'), 0, PlaybackSpeeds.high)
+  of '+', '=', '-', '_', '1', '2', '4', '5', '8', '6':
+    applySpeedCommand(player.speedIndex, command)
   else:
     discard
 
@@ -410,8 +448,11 @@ proc advanceReplayPlayback*(
 ) =
   ## One PRESENTATION frame. A lull is fast-forwarded at `LullSpeedBoost`; the
   ## final frame is HELD so the endcard is readable before a looping replay
-  ## restarts.
+  ## restarts. At 1/2x a turn is spent only every other frame (halfPhase
+  ## parity), so the toggle is unconditional — the FIRST statement — to keep
+  ## the parity clock ticking through pauses.
   const LullSpeedBoost = 8
+  player.halfPhase = not player.halfPhase
   if not player.playing:
     return
   if sim.tickCount >= player.maxTick:
@@ -425,6 +466,8 @@ proc advanceReplayPlayback*(
   var steps = player.replaySpeed()
   if player.skipLulls and player.isLullTick(sim.tickCount):
     steps = min(64, steps * LullSpeedBoost)
+  elif player.speedIndex == ReplayHalfSpeedIndex:
+    steps = (if player.halfPhase: 1 else: 0)
   for _ in 0 ..< steps:
     if sim.tickCount >= player.maxTick:
       player.endHoldFrames = ReplayFps * 10

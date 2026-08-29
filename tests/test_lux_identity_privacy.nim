@@ -49,7 +49,7 @@ suite "lux identity privacy":
     check results["names"][0].getStr() == Sentinel
     check results["aliases"][0].getStr() == "RED-alpha"
     var tracker = initBroadcastTracker()
-    let state = game.buildStateJson(tracker, newJArray(), false, 1, 400,
+    let state = game.buildStateJson(tracker, newJArray(), false, 1.0, 400,
       false, true, -1, 0, false, false)
     check Sentinel in state
     check "RED-alpha" in state

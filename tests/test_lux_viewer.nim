@@ -8,8 +8,12 @@ import helpers
 const
   # Pinned against coworld-ctf's files. A single edited byte fails here, which
   # is the whole point: everything lux-ai adds lives in the appended game block.
+  # chrome_common.js carries exactly one deliberate delta on top of the ctf
+  # bytes: the fleet-wide replay transport patch (a 0.5x entry in the SPEEDS
+  # fallback and a 0.5→'5' entry in the speed→command map). The CTF_WIRE
+  # lookup stays — wire_constants.nim aliases it to LUX_WIRE by design.
   ChromeCommonSha256 =
-    "7ace7287e0d19bf0fddb2362c55e4d76dfb44adcd4fbc8d1743b0557ced72f7c"
+    "594ed4a72cd908922c982d0f3e3ffb04ae1d97568fcd5f5daa794042662a369c"
   BroadcastCoreSha256 =
     "172c4680129d608fd687cfd86436b675eef32c8652be6afe5f3189dd20c5aa9c"
   SpliceBanner = "LUX-AI additions to the inherited coworld-ctf chrome"
@@ -81,7 +85,7 @@ let
   gameBlock = page[spliceAt .. ^1]
 
 suite "lux viewer":
-  test "chrome_common.js is byte-identical to coworld-ctf's":
+  test "chrome_common.js is coworld-ctf's plus the fleet transport patch":
     check sha256Hex(readRepoFile("client/chrome_common.js")) ==
       ChromeCommonSha256
     ## and carries no lux edit at all

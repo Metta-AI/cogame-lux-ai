@@ -529,7 +529,7 @@ proc runServerLoop*(
     var nextViewer: GlobalViewerState
     var packet = buildBoardPacket(sim, viewer, nextViewer)
     globalStates[0] = nextViewer
-    packet.addChrome(sim.buildStateJson(tracker, events, false, 1,
+    packet.addChrome(sim.buildStateJson(tracker, events, false, 1.0,
       max(1, sim.tickCount), false, false, -1, sim.gameStartTick, false, false))
     broadcast(packet)
 

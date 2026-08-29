@@ -73,7 +73,7 @@ proc buildReplayViewerPacket*(
     tracker,
     events,
     player.playing,
-    player.replaySpeed(),
+    player.replayDisplaySpeed(),
     player.replayMaxTick(),
     player.looping,
     true,
