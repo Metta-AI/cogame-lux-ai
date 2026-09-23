@@ -2341,9 +2341,12 @@ button.beat-marker {
     if (timeEl.textContent !== text) timeEl.textContent = text;
     var score = s.score || { cityTiles: [0, 0] };
     var every = 10;
-    var cap = 'cycle ' + (s.cycle || 1) + ' of ' + (s.cycles || 9) +
-      ' \u00B7 directive ' + (Math.floor(turn / every) + 1) + '/' +
-      Math.max(1, Math.ceil(turns / every)) +
+    var cycles = s.cycles || 9;
+    var directives = Math.max(1, Math.ceil(turns / every));
+    var cycle = Math.min(s.cycle || 1, cycles);
+    var directive = Math.min(Math.floor(turn / every) + 1, directives);
+    var cap = 'cycle ' + cycle + ' of ' + cycles +
+      ' \u00B7 directive ' + directive + '/' + directives +
       ' \u00B7 RED ' + score.cityTiles[0] + ' \u2013 ' + score.cityTiles[1] +
       ' BLUE';
     if (capEl && capEl.textContent !== cap) capEl.textContent = cap;
