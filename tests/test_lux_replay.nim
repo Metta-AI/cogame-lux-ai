@@ -147,6 +147,21 @@ suite "lux replay":
     check played.sim.world.cities.tileCount(Blue) ==
       recorded.game.world.cities.tileCount(Blue)
 
+  test "a replay ending on the final game tick reaches its result frame":
+    let path = dir / "final_tick.replay"
+    var config = fixtureConfig(seed = 42)
+    config.gameOverTicks = 0
+    let recorded = record(config, path)
+    let played = replayCleanly(path)
+    check played.player.hashMismatchTick == -1
+    check played.sim.tickCount == recorded.game.tickCount
+    check played.sim.phase == GameOver
+    check played.sim.world.turn == recorded.game.world.turn
+    check played.sim.world.cities.tileCount(Red) ==
+      recorded.game.world.cities.tileCount(Red)
+    check played.sim.world.cities.tileCount(Blue) ==
+      recorded.game.world.cities.tileCount(Blue)
+
   test "a lobby LONGER than startWaitTicks re-derives frame by frame":
     ## The recorded lobby is a wall-clock fact: seats that connect at tick 120
     ## make the live game start at 120, and playback must start there too. When
