@@ -248,7 +248,7 @@ proc checkReplayHash(player: var ReplayPlayer, sim: SimServer, tick: int) =
 
 proc stepReplay*(player: var ReplayPlayer, sim: var SimServer) =
   ## One replay tick: apply this tick's records, step, then compare hashes.
-  if sim.tickCount > player.maxTick:
+  if sim.tickCount >= player.maxTick:
     return
   let tick = sim.tickCount
   player.applyRecordsAt(sim, tick)
@@ -312,7 +312,7 @@ proc runScan(player: var ReplayPlayer) =
   player.leadSeries = @[]
   player.beats = @[]
   player.startTick = -1
-  while sim.tickCount <= player.maxTick:
+  while sim.tickCount < player.maxTick:
     let before = sim.tickCount
     let eventsBefore = sim.world.events.len
     scanner.stepReplay(sim)
@@ -390,7 +390,7 @@ proc initReplayPlayer*(data: codec.ReplayData): ReplayPlayer =
   result.startTick = -1
   result.maxTick = 0
   for hash in data.hashes:
-    result.maxTick = max(result.maxTick, int(hash.tick))
+    result.maxTick = max(result.maxTick, int(hash.tick) + 1)
   result.runScan()
 
 proc applySpeedCommand*(speedIndex: var int, command: char) =
