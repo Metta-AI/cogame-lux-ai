@@ -2536,19 +2536,31 @@ button.beat-marker {
       return '#' + seat;
     }
     var tiles = (results.cityTiles || [0, 0]);
+    var units = (results.units || [0, 0]);
+    var fuel = (results.fuel || [0, 0]);
+    var values = tiles[0] !== tiles[1] ? tiles :
+      units[0] !== units[1] ? units : fuel;
+    var basis = values === tiles ? 'city tiles' :
+      values === units ? 'units' : 'fuel';
     var winner = over.draw ? -1 : (over.winner === 'red' ? 0 : 1);
     var head = luxId('ec-headline');
     if (head) {
       head.textContent = over.draw
-        ? 'LUX \u2014 DRAWN AT ' + tiles[0] + ' CITY TILES'
-        : 'LUX \u2014 ' + nameOf(winner).toUpperCase() + ' ' +
-          Math.max(tiles[0], tiles[1]) + ' CITY TILES TO ' +
-          Math.min(tiles[0], tiles[1]);
+        ? 'LUX \u2014 DRAW'
+        : 'LUX \u2014 ' + nameOf(winner).toUpperCase() + ' WINS ON ' +
+          basis.toUpperCase() + ' ' + values[winner] + ' TO ' + values[1 - winner];
     }
     var cond = luxId('ec-wincond');
     if (cond) {
-      cond.textContent = 'Most city tiles standing at turn ' +
-        (results.turnsPlayed || 0) + ' \u2014 ' + (results.endRule || '');
+      var turn = results.turnsPlayed || 0;
+      var endRule = results.endRule || '';
+      cond.textContent = endRule === 'full_time'
+        ? 'Full match ended at turn ' + turn
+        : endRule === 'eliminated'
+          ? 'Elimination ended the match at turn ' + turn
+          : endRule === 'wall_clock'
+            ? 'Time limit ended the match at turn ' + turn
+            : 'Match stopped at turn ' + turn + ' \u2014 ' + endRule;
     }
     var teams = luxId('ec-teams');
     if (teams) {
@@ -2574,12 +2586,13 @@ button.beat-marker {
     if (how) {
       var lost = results.cityTilesLost || [0, 0];
       var research = results.research || [0, 0];
-      how.textContent = (winner >= 0 ? luxSide(winner) : 'NOBODY') +
-        (research[Math.max(0, winner)] < 200
+      how.textContent = results.endRule === 'full_time' && winner >= 0
+        ? luxSide(winner) + (research[winner] < 200
           ? ' never researched uranium and won anyway'
           : ' bought the whole fuel ladder') +
-        ' \u2014 ' + luxSide(winner === 0 ? 1 : 0) + ' lost ' +
-        lost[winner === 0 ? 1 : 0] + ' city tiles to the night.';
+          ' \u2014 ' + luxSide(1 - winner) + ' lost ' +
+          lost[1 - winner] + ' city tiles to the night.'
+        : 'Ties are decided by units, then fuel.';
     }
   }
 
