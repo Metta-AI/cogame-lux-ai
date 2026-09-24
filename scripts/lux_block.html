@@ -252,6 +252,10 @@
 }
 
 /* --- scrubber beats: one rule per kind lux-ai emits, and no others ------ */
+/* The moving playhead and verdict cap are visual only. Let them pass clicks
+   to a beat marker underneath, including the final marker on a narrow embed. */
+#scrub-head, #scrub-win { pointer-events: none; }
+
 /* Buttons, not divs: each carries a title + aria-label and seeks on click. */
 button.beat-marker {
   border: 0;
@@ -303,6 +307,16 @@ button.beat-marker {
   font-size: calc(8 * var(--u));
   color: var(--paper-dim);
   padding-bottom: calc(4 * var(--u));
+}
+/* The deciding margin belongs in the verdict, even at the 360px embed floor. */
+@media (max-width: 700px) {
+  #stage.tiny #ec-headline {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    font-size: calc(22 * var(--u));
+    line-height: 1.15;
+  }
 }
 
 /* --- legible at 360px --------------------------------------------------- */
