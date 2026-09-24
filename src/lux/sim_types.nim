@@ -12,11 +12,13 @@
 ## character renders fine in a browser and then fails a strict UTF-8 parser.
 
 const
-  GameVersion* = "1"
+  GameVersion* = "2"
     ## Replay compatibility gate. PREPEND-ONLY changelog; say what the number
     ## means and what it obsoletes, in the `GVnn (rule): HEADLINE` shape the
     ## starter's `tools/ci/check_gameversion.sh` diffs.
     ##
+    ## GV2 (wood regrowth guard): scarcity wood may reach the 500-unit
+    ## regrowth cap without ending the episode as a sim fault; obsoletes GV1.
     ## GV1 (lux season 1): first rules — 16x16 mirrored island, 40-turn
     ## day/night cycle, wood/coal/uranium with research gates at 50 and 200,
     ## city upkeep 23/tile less 5 per touching pair, most city tiles at turn

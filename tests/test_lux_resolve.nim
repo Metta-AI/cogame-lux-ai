@@ -370,6 +370,19 @@ suite "lux resolve":
     check world.board.amount[41] == 0
     check world.board.amount[42] == 500
 
+  test "scarcity wood remains valid at the 500-unit regrowth cap":
+    var world = buildWorld()
+    world.clearBoard()
+    world.config.woodStart = 200
+    world.board.terrain[40] = tWood
+    world.board.amount[40] = 499
+    world.board.terrain[39] = tWood
+    world.board.amount[39] = 499
+    world.step(TurnOrders())
+    check world.board.amount[40] == 500
+    check world.board.amount[39] == 500
+    world.checkLuxInvariants()
+
   test "transfers move at most the giver's stock and the receiver's free space":
     var world = buildWorld()
     world.clearBoard()

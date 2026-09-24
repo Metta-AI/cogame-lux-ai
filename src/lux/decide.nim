@@ -91,7 +91,7 @@ proc stopRecord*(turn: int): string =
 #  How it went
 # ---------------------------------------------------------------------------
 
-proc snapshot(engine: var DecisionEngine, sim: SimServer, seat: int):
+proc snapshot*(engine: var DecisionEngine, sim: SimServer, seat: int):
     tuple[since: array[3, int64], cities, workers, carts, lostTiles,
           lostUnits: int, story: string] =
   let world = sim.world

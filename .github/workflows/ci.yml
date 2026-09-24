@@ -155,6 +155,11 @@ jobs:
           done
           exit "${fail}"
 
+      - name: Export complete training episodes
+        run: |
+          nim c -d:release --path:src -o:/tmp/lux-posttrain tools/export_posttrain.nim
+          python3 tools/test_posttrain.py /tmp/lux-posttrain
+
   # ---------------------------------------------------------------------
   # The GameVersion gate. AGENTS.md documents check_gameversion.sh as THE way
   # to check a bump, but nothing ran it -- which is exactly how it sat broken
