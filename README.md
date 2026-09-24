@@ -46,6 +46,8 @@ The two champion prompts are in
 GAME container**, not by the player pod — that is where the coworld secret is
 injected — so no policy needs a Bedrock flag.
 
+See [TRAINING.md](TRAINING.md) for complete native post-training exports.
+
 ## Layout
 
 ```

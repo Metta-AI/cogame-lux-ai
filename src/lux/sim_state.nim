@@ -199,8 +199,10 @@ proc checkLuxInvariants*(world: World) =
   for cell in 0 ..< cells:
     let kind = world.board.terrain[cell]
     if kind != tEmpty:
-      let cap = 2 * startAmount(kind, world.config.woodStart,
+      let start = startAmount(kind, world.config.woodStart,
         world.config.coalStart, world.config.uraniumStart)
+      let cap = if kind == tWood: max(2 * start, WoodRegrowCap)
+        else: 2 * start
       if world.board.amount[cell] < 0 or world.board.amount[cell] > cap:
         raise newException(LuxGuardError,
           "resource amount out of range at cell " & $cell)
