@@ -160,6 +160,11 @@ jobs:
           nim c -d:release --path:src -o:/tmp/lux-posttrain tools/export_posttrain.nim
           python3 tools/test_posttrain.py /tmp/lux-posttrain
 
+      - name: Train bridge complete games
+        run: |
+          nim c -d:release --path:src -o:/tmp/lux-train-bridge tools/train_bridge.nim
+          python3 tools/test_train_bridge.py /tmp/lux-train-bridge
+
   # ---------------------------------------------------------------------
   # The GameVersion gate. AGENTS.md documents check_gameversion.sh as THE way
   # to check a bump, but nothing ran it -- which is exactly how it sat broken
