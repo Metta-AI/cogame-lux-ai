@@ -102,11 +102,11 @@ suite "lux manifest":
     check manifest["certification"]["game_config"][
       "wallClockBudgetSeconds"].getInt() <= 660
 
-  test "game.name equals the secret namespace and the compose-derived image":
+  test "hosted inference needs no provider secret":
     let name = manifest["game"]["name"].getStr()
     check name == "lux-ai"
-    check manifest["game"]["runnable"]["env"]["ANTHROPIC_API_KEY_URI"].getStr() ==
-      "secret://coworld/" & name & "/anthropic_api_key"
+    doAssert manifest{"game"}{"runnable"}{"env"}{"ANTHROPIC_API_KEY_URI"}.isNil,
+      "hosted LLM uses the platform sidecar without provider secrets"
     let compose = readRepoFile("compose.yaml")
     check compose.contains("lux_ai:")
     check compose.contains("image: coworld-lux-ai:latest")
