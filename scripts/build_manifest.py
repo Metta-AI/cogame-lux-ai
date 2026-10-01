@@ -253,8 +253,7 @@ def main() -> int:
             # coworld secret and every league episode silently plays scripted
             # (the hive 2026-08-23 scar). Local certify still passes, so it
             # only surfaces at phase-60 check 4.
-            "env": {"ANTHROPIC_API_KEY_URI":
-                    "secret://coworld/lux-ai/anthropic_api_key"},
+            "env": {},
             "source_url": SOURCE_URL,
         },
         "replay_viewer": {"bundle": "static-replay-viewer"},

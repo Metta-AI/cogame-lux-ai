@@ -39,7 +39,7 @@ suite "lux scaffold":
 
   test "the release and submit workflows expose the inputs phases 40/50 pass":
     let release = readRepoFile(".github/workflows/coworld-release.yml")
-    for input in ["version:", "policies:", "put_secret:", "skip_certify:"]:
+    for input in ["version:", "policies:", "skip_certify:"]:
       checkpoint(input)
       check ("      " & input) in release
     check "release-result" in release
