@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from typing import TextIO, cast
 
 
 def read_exact(stream, length):
@@ -81,7 +82,7 @@ def main():
                 text=True,
             ) as process:
                 try:
-                    for line in process.stdout:
+                    for line in cast(TextIO, process.stdout):
                         if "listening on" in line:
                             break
                     assert process.poll() is None, "game failed to start"
