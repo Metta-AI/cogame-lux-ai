@@ -58,6 +58,7 @@ type
     pendingChat: seq[tuple[slot: int, text: string]]
     viewerMessages: seq[tuple[id: int, text: string]]
     replayBytes: string
+    viewerSnapshot: string
     shuttingDown: bool
 
 var appState: AppState
@@ -137,6 +138,7 @@ proc httpHandler(request: Request) {.gcsafe.} =
         appState.connections[id] =
           Connection(kind: 1, slot: -1, state: initGlobalViewerState())
         appState.sockets[id] = websocket
+        websocket.send(appState.viewerSnapshot, BinaryMessage)
     return
   if request.path == RewardSocketPath and request.httpMethod == "GET" and
       request.isWebSocketUpgrade():
@@ -302,6 +304,14 @@ proc runServerLoop*(
     LuxReplaySpec)
   defer: writer.closeReplayWriter()
 
+  # Publish a complete lobby frame before accepting spectators. The simulation
+  # may then wait for players or block on inference without delaying a viewer.
+  var initialViewer: GlobalViewerState
+  var initialPacket = buildBoardPacket(sim, initGlobalViewerState(), initialViewer)
+  initialPacket.addChrome(sim.buildStateJson(tracker, newJArray(), false, 1.0,
+    max(1, sim.tickCount), false, false, -1, sim.gameStartTick, false, false))
+  appState.viewerSnapshot = blobFromBytes(initialPacket)
+
   let httpServer = newServer(httpHandler, websocketHandler, workerThreads = 2)
   var
     serverThread: Thread[ServerThreadArgs]
@@ -388,7 +398,14 @@ proc runServerLoop*(
     ## "the connection never worked" — which is how a player container ends up
     ## re-dialling past the certifier's patience.
     let blob = blobFromBytes(packet)
+    # A late viewer needs every sprite and object, not only the shared delta.
+    # Append the current broadcast for its chrome (including replay controls).
+    var snapshotViewer: GlobalViewerState
+    var snapshot = buildBoardPacket(sim, initGlobalViewerState(), snapshotViewer)
+    snapshot.add(packet)
+    let snapshotBlob = blobFromBytes(snapshot)
     withLock appState.lock:
+      appState.viewerSnapshot = snapshotBlob
       for id, connection in appState.connections:
         if connection.kind == 2:
           continue
